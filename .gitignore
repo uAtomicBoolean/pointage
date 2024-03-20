@@ -160,4 +160,4 @@ cython_debug/
 #.idea/
 
 # Empeche de push l'executable du script.
-./pointage
+pointage
