@@ -4,10 +4,7 @@ from utils import Pointage
 def main():
     pointage = Pointage()
     args = pointage.parse()
-    try:
-        args.func(args)
-    except:
-        pass
+    args.func(args)
 
 
 if __name__ == "__main__":

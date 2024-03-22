@@ -51,6 +51,13 @@ class Pointage:
             "time", help="Affiche le temps de travail de la journée actuelle."
         )
         cmd_time.set_defaults(func=self.time)
+        cmd_time.add_argument(
+            "-w",
+            "--week",
+            help="Indique le temps travaillé sur la semaine.",
+            action="store_const",
+            const=True,
+        )
 
         return parser
 
@@ -80,6 +87,6 @@ class Pointage:
         ][0]
         print(f"Dernier pointage : {action_name} à {last_att['name']}")
 
-    def time(self, _: argparse.Namespace):
-        current_time = self.odoo_client.get_current_time()
+    def time(self, args: argparse.Namespace):
+        current_time = self.odoo_client.get_current_time(args.week)
         print(f"Journée actuelle : {current_time}")

@@ -85,7 +85,7 @@ class OdooClient:
 
         return last_att
 
-    def get_current_time(self):
+    def get_current_time(self, get_week: bool = False):
         last_timesheet = self.models.execute_kw(
             OdooClient.DB,
             self.uid,
@@ -93,20 +93,23 @@ class OdooClient:
             "hr_timesheet_sheet.sheet",
             "search_read",
             [[["employee_id", "=", self.employee_id]]],
-            {"fields": ["id"], "limit": 1},
+            {"fields": ["id", "total_difference"], "limit": 1},
         )[0]
 
-        current_day = self.models.execute_kw(
-            OdooClient.DB,
-            self.uid,
-            self.pwd,
-            "hr_timesheet_sheet.sheet.day",
-            "search_read",
-            [[["sheet_id", "=", last_timesheet["id"]]]],
-            {"order": "name desc", "limit": 1},
-        )[0]
+        if not get_week:
+            current_time = self.models.execute_kw(
+                OdooClient.DB,
+                self.uid,
+                self.pwd,
+                "hr_timesheet_sheet.sheet.day",
+                "search_read",
+                [[["sheet_id", "=", last_timesheet["id"]]]],
+                {"order": "name desc", "limit": 1},
+            )[0]
+        else:
+            current_time = last_timesheet
 
-        str_time = str(current_day["total_difference"]).split(".")
+        str_time = str(current_time["total_difference"]).split(".")
 
         # Force the minutes to be 2 a digits number.
         # necessary to avoid an error where the str_minutes is only '9' instead
