@@ -7,11 +7,7 @@ class Pointage:
     """Classe principale gérant les commandes du scripts."""
 
     def __init__(self):
-        self.parser = self.build_args_parser()
-        self.odoo_client = OdooClient()
-
-    def build_args_parser(self):
-        parser = argparse.ArgumentParser(
+        self.parser = argparse.ArgumentParser(
             prog="pointage",
             description="Plus besoin d'aller dans Odoo pour gérer notre pointage "
             "grâce à ce script dernière génération utilisant les plus grand "
@@ -19,31 +15,46 @@ class Pointage:
             "Licence gratuite jusqu'en 2025 puis passage à une licence payante "
             "renouvelable annuellement à un prix de 9 999€.",
         )
-        parser.set_defaults(func=lambda _: parser.print_help())
+        self.parser.set_defaults(func=lambda _: self.parser.print_help())
+        self.subparsers = self.parser.add_subparsers(help="Liste des commandes.")
 
-        subparsers = parser.add_subparsers(help="Liste des commandes.")
+        self.build_parser_presence()
+        self.build_parser_subcommands()
 
-        # Ajoute le parser pour la commande de pointage propre.
-        cmd_pointe = subparsers.add_parser(
-            "pointe", help="Permet de pointer une présence."
-        )
-        cmd_pointe.set_defaults(func=self.pointe_presence)
-        cmd_pointe.add_argument(
-            "action",
-            choices=["entree", "sortie"],
-            type=str,
-            help="L'action du pointage.",
-        )
-        cmd_pointe.add_argument(
-            "-o",
-            "--offset",
+        self.odoo_client = OdooClient()
+
+    def build_parser_presence(self):
+        """
+        Build the parser for both 'entree' and 'sortie' subcommands.
+        These commands are separated to ease the use of the script.
+        They could be grouped as a parameter of a subcommand but it
+        adds a step when writing the command.
+        """
+
+        cmd_entree = self.subparsers.add_parser("entree", help="Pointe l'entrée.")
+        cmd_sortie = self.subparsers.add_parser("sortie", help="Pointe la sortie.")
+        cmd_entree.set_defaults(func=self.pointe_presence, action="entree")
+        cmd_sortie.set_defaults(func=self.pointe_presence, action="sortie")
+        cmd_entree.add_argument(
+            "offset",
             help="Décalage en minutes par rapport à l'heure actuelle.",
             type=int,
-            required=False,
             default=0,
+            nargs="?",
+        )
+        cmd_sortie.add_argument(
+            "offset",
+            help="Décalage en minutes par rapport à l'heure actuelle.",
+            type=int,
+            default=0,
+            nargs="?",
         )
 
-        cmd_last = subparsers.add_parser("last", help="Affiche le dernier pointage.")
+    def build_parser_subcommands(self):
+        # Commande last pour afficher les N derniers pointages.
+        cmd_last = self.subparsers.add_parser(
+            "last", help="Affiche le dernier pointage."
+        )
         cmd_last.set_defaults(func=self.last)
         cmd_last.add_argument(
             "limit",
@@ -53,19 +64,18 @@ class Pointage:
             type=int,
         )
 
-        cmd_time = subparsers.add_parser(
+        # Commande time pour afficher le temps travaille.
+        cmd_time = self.subparsers.add_parser(
             "time", help="Affiche le temps de travail de la journée actuelle."
         )
         cmd_time.set_defaults(func=self.time)
         cmd_time.add_argument(
-            "-w",
-            "--week",
-            help="Indique le temps travaillé sur la semaine.",
-            action="store_const",
-            const=True,
+            "week",
+            nargs="?",
+            default=False,
+            help="Afficher le temps de la semaine.",
+            type=bool,
         )
-
-        return parser
 
     def parse(self) -> argparse.Namespace:
         """Wrapper pour le parsing des arguments du script."""
@@ -73,6 +83,7 @@ class Pointage:
         return self.parser.parse_args()
 
     def pointe_presence(self, args: argparse.Namespace):
+        print(args)
         attendance_id, date_pointage = self.odoo_client.add_attendance(
             args.action, args.offset
         )
@@ -104,4 +115,5 @@ class Pointage:
 
     def time(self, args: argparse.Namespace):
         current_time = self.odoo_client.get_current_time(args.week)
-        print(f"Journée actuelle : {current_time}")
+        prefix = "Semaine actuelle" if args.week else "Journée actuelle"
+        print(f"{prefix} : {current_time}")
