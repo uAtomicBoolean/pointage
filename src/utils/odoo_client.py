@@ -69,21 +69,18 @@ class OdooClient:
             att_id = -1
         return (att_id, date)
 
-    def get_last_attendance(self):
-        last_att = self.models.execute_kw(
+    def get_last_x_attendance(self, limit: int):
+        last_atts = self.models.execute_kw(
             OdooClient.DB,
             self.uid,
             self.pwd,
             "hr.attendance",
             "search_read",
             [[]],
-            {"fields": ["name", "action"], "limit": 1},
-        )[0]
+            {"fields": ["name", "action"], "limit": limit},
+        )
 
-        date = datetime.datetime.strptime(last_att["name"], "%Y-%m-%d %H:%M:%S")
-        last_att["name"] = date + datetime.timedelta(hours=1)
-
-        return last_att
+        return last_atts
 
     def get_current_time(self, get_week: bool = False):
         last_timesheet = self.models.execute_kw(

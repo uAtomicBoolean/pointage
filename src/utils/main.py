@@ -1,11 +1,10 @@
 import argparse
+import datetime
 from .odoo_client import OdooClient
 
 
 class Pointage:
-    """
-    Classe principale gérant les commandes du scripts.
-    """
+    """Classe principale gérant les commandes du scripts."""
 
     def __init__(self):
         self.parser = self.build_args_parser()
@@ -46,6 +45,13 @@ class Pointage:
 
         cmd_last = subparsers.add_parser("last", help="Affiche le dernier pointage.")
         cmd_last.set_defaults(func=self.last)
+        cmd_last.add_argument(
+            "limit",
+            nargs="?",
+            default=1,
+            help="Le nombre de lignes à afficher.",
+            type=int,
+        )
 
         cmd_time = subparsers.add_parser(
             "time", help="Affiche le temps de travail de la journée actuelle."
@@ -78,14 +84,23 @@ class Pointage:
         else:
             print(f"Pointage créé (id: {attendance_id}) pour l'heure {date_pointage}")
 
-    def last(self, _: argparse.Namespace):
-        last_att = self.odoo_client.get_last_attendance()
-        action_name = [
-            act
-            for act, o_act in OdooClient.ATT_ACTIONS.items()
-            if o_act == last_att["action"]
-        ][0]
-        print(f"Dernier pointage : {action_name} à {last_att['name']}")
+    def last(self, args: argparse.Namespace):
+        last_atts = self.odoo_client.get_last_x_attendance(args.limit)
+
+        for att in last_atts:
+            date = datetime.datetime.strptime(att["name"], "%Y-%m-%d %H:%M:%S")
+            att["name"] = date + datetime.timedelta(hours=1)
+            action_name = [
+                act
+                for act, o_act in OdooClient.ATT_ACTIONS.items()
+                if o_act == att["action"]
+            ][0]
+            action_name = (
+                f"\033[92m{action_name}"
+                if action_name == "entree"
+                else f"\033[91m{action_name}"
+            )
+            print(f"{action_name}\033[0m à {att['name']}")
 
     def time(self, args: argparse.Namespace):
         current_time = self.odoo_client.get_current_time(args.week)
