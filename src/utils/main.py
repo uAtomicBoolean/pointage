@@ -11,7 +11,7 @@ class Pointage:
             prog="pointage",
             description="Plus besoin d'aller dans Odoo pour gérer notre pointage "
             "grâce à ce script dernière génération utilisant les plus grand "
-            "modèles d'intelligences artificielles. "
+            "modèles d'intelligence artificielles. "
             "Licence gratuite jusqu'en 2025 puis passage à une licence payante "
             "renouvelable annuellement à un prix de 9 999€.",
         )
@@ -83,7 +83,6 @@ class Pointage:
         return self.parser.parse_args()
 
     def pointe_presence(self, args: argparse.Namespace):
-        print(args)
         attendance_id, date_pointage = self.odoo_client.add_attendance(
             args.action, args.offset
         )
