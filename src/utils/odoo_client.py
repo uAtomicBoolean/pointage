@@ -1,6 +1,7 @@
-import datetime
+from datetime import date, datetime, timedelta
 from xmlrpc.client import ServerProxy
 from .credentials_manager import CredentialsManager
+from .utils import get_season
 
 
 class OdooClient:
@@ -12,6 +13,11 @@ class OdooClient:
     ATT_ACTIONS = {"entree": "sign_in", "sortie": "sign_out"}
 
     def __init__(self):
+        if get_season(datetime.now()) in ["spring", "summer"]:
+            self.season_offset = -2
+        else:
+            self.season_offset = -1
+
         credentials = CredentialsManager()
         self.username = credentials.get("id")
         self.pwd = credentials.get("pwd")
@@ -47,9 +53,15 @@ class OdooClient:
     def add_attendance(self, action: str, offset: int):
         """Creates a new attendance on Odoo and returns its ID."""
 
-        delta_offset = datetime.timedelta(minutes=offset)
-        date = datetime.datetime.now() + delta_offset
-        attendance_time = f"{date.strftime('%Y-%m-%d')} {str(int(date.hour) - 1).zfill(1)}:{date.strftime('%M:%S')}"
+        delta_offset = timedelta(minutes=offset)
+        now = datetime.now() + delta_offset
+
+        attendance_time = (
+            f"{now.strftime('%Y-%m-%d')} "
+            + f"{str(int(now.hour) + self.season_offset).zfill(1)}:"
+            + f"{now.strftime('%M:%S')}"
+        )
+
         record_data = {
             "employee_id": self.employee_id,
             "name": attendance_time,
@@ -67,7 +79,7 @@ class OdooClient:
             )
         except:
             att_id = -1
-        return (att_id, date)
+        return (att_id, now)
 
     def get_last_x_attendance(self, limit: int):
         last_atts = self.models.execute_kw(
