@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+import datetime
 from xmlrpc.client import ServerProxy
 from .credentials_manager import CredentialsManager
 from .utils import get_season
@@ -13,7 +13,7 @@ class OdooClient:
     ATT_ACTIONS = {"entree": "sign_in", "sortie": "sign_out"}
 
     def __init__(self):
-        if get_season(datetime.now()) in ["spring", "summer"]:
+        if get_season(datetime.datetime.now()) in ["spring", "summer"]:
             self.season_offset = -2
         else:
             self.season_offset = -1
@@ -53,8 +53,8 @@ class OdooClient:
     def add_attendance(self, action: str, offset: int):
         """Creates a new attendance on Odoo and returns its ID."""
 
-        delta_offset = timedelta(minutes=offset)
-        now = datetime.now() + delta_offset
+        delta_offset = datetime.timedelta(minutes=offset)
+        now = datetime.datetime.now() + delta_offset
 
         attendance_time = (
             f"{now.strftime('%Y-%m-%d')} "
