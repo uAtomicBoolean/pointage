@@ -1,4 +1,4 @@
-from utils import Pointage
+from pointage import Pointage
 
 
 def main():
