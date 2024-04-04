@@ -1,6 +1,7 @@
 import argparse
 import datetime
 from .odoo_client import OdooClient
+from .colors import red, green, bold
 
 
 class Pointage:
@@ -12,8 +13,8 @@ class Pointage:
             description="Plus besoin d'aller dans Odoo pour gérer notre pointage "
             "grâce à ce script dernière génération utilisant les plus grand "
             "modèles d'intelligence artificielles. "
-            "Licence gratuite jusqu'en 2025 puis passage à une licence payante "
-            "renouvelable annuellement à un prix de 9 999€.",
+            "Licence gratuite jusqu'au 31 décembre 2024 puis passage à une licence payante "
+            "renouvelable annuellement à un prix de 9 999€ au 1er janvier 2025.",
         )
         self.parser.set_defaults(func=lambda _: self.parser.print_help())
         self.subparsers = self.parser.add_subparsers(help="Liste des commandes.")
@@ -69,13 +70,6 @@ class Pointage:
             "time", help="Affiche le temps de travail de la journée actuelle."
         )
         cmd_time.set_defaults(func=self.time)
-        cmd_time.add_argument(
-            "week",
-            nargs="?",
-            default=False,
-            help="Afficher le temps de la semaine.",
-            type=bool,
-        )
 
     def parse(self) -> argparse.Namespace:
         """Wrapper pour le parsing des arguments du script."""
@@ -106,13 +100,13 @@ class Pointage:
                 if o_act == att["action"]
             ][0]
             action_name = (
-                f"\033[92m{action_name}"
+                green(action_name)
                 if action_name == "entree"
-                else f"\033[91m{action_name}"
+                else red(action_name)
             )
-            print(f"{action_name}\033[0m à {att['name']}")
+            print(f"{action_name} à {att['name']}")
 
-    def time(self, args: argparse.Namespace):
-        current_time = self.odoo_client.get_current_time(args.week)
-        prefix = "Semaine actuelle" if args.week else "Journée actuelle"
-        print(f"{prefix} : {current_time}")
+    def time(self, _: argparse.Namespace):
+        day_time, week_time = self.odoo_client.get_current_time()
+        print(bold("Journée actuelle :"), day_time)
+        print(bold("Semaine actuelle :"), week_time)

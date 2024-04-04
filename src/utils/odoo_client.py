@@ -1,7 +1,7 @@
 import datetime
 from xmlrpc.client import ServerProxy
 from .credentials_manager import CredentialsManager
-from .utils import get_season
+from .utils import get_season, get_str_from_timesheet
 
 
 class OdooClient:
@@ -94,7 +94,7 @@ class OdooClient:
 
         return last_atts
 
-    def get_current_time(self, get_week: bool = False):
+    def get_current_time(self):
         last_timesheet = self.models.execute_kw(
             OdooClient.DB,
             self.uid,
@@ -105,30 +105,18 @@ class OdooClient:
             {"fields": ["id", "total_difference"], "limit": 1},
         )[0]
 
-        if not get_week:
-            current_time = self.models.execute_kw(
-                OdooClient.DB,
-                self.uid,
-                self.pwd,
-                "hr_timesheet_sheet.sheet.day",
-                "search_read",
-                [[["sheet_id", "=", last_timesheet["id"]]]],
-                {"order": "name desc", "limit": 1},
-            )[0]
-        else:
-            current_time = last_timesheet
+        day_time = self.models.execute_kw(
+            OdooClient.DB,
+            self.uid,
+            self.pwd,
+            "hr_timesheet_sheet.sheet.day",
+            "search_read",
+            [[["sheet_id", "=", last_timesheet["id"]]]],
+            {"order": "name desc", "limit": 1},
+        )[0]
+        week_time = last_timesheet
 
-        str_time = str(current_time["total_difference"]).split(".")
-
-        # Force the minutes to be 2 a digits number.
-        # necessary to avoid an error where the str_minutes is only '9' instead
-        # of '90' hence resulting in a converted time of 5 minutes instead of 50 minutes.
-        str_minutes = str_time[1]
-        if len(str_minutes) < 2:
-            str_minutes += "0"
-
-        # The minutes from Odoo are not in minutes but are in percent (0 to 100).
-        # Hence we need to convert them to minutes.
-        minutes = ((60 * int(str_minutes)) // 100) + 1
-
-        return f"{str_time[0]}h{str(minutes).zfill(2)}"
+        return (
+            get_str_from_timesheet(day_time),
+            get_str_from_timesheet(week_time)
+        )
