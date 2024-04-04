@@ -24,7 +24,7 @@ def get_season(now):
 def get_str_from_timesheet(timesheet) -> str:
     """Build a string of the time worked from a timesheet."""
 
-    str_time = str(timesheet["total_difference"]).split(".")
+    str_time = str(timesheet["total_attendance"]).split(".")
 
     # Force the minutes to be 2 a digits number.
     # necessary to avoid an error where the str_minutes is only '9' instead
@@ -32,6 +32,9 @@ def get_str_from_timesheet(timesheet) -> str:
     str_minutes = str_time[1]
     if len(str_minutes) < 2:
         str_minutes += "0"
+    elif len(str_minutes) > 2:
+        reduce_factor = 10 ** (len(str_minutes) - 2)
+        str_minutes = int(int(str_minutes) / reduce_factor)
 
     # The minutes from Odoo are not in minutes but are in percent (0 to 100).
     # Hence we need to convert them to minutes.

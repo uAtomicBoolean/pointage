@@ -95,14 +95,14 @@ class OdooClient:
         return last_atts
 
     def get_current_time(self):
-        last_timesheet = self.models.execute_kw(
+        week_time = self.models.execute_kw(
             OdooClient.DB,
             self.uid,
             self.pwd,
             "hr_timesheet_sheet.sheet",
             "search_read",
             [[["employee_id", "=", self.employee_id]]],
-            {"fields": ["id", "total_difference"], "limit": 1},
+            {"fields": ["id", "total_attendance"], "limit": 1},
         )[0]
 
         day_time = self.models.execute_kw(
@@ -111,10 +111,9 @@ class OdooClient:
             self.pwd,
             "hr_timesheet_sheet.sheet.day",
             "search_read",
-            [[["sheet_id", "=", last_timesheet["id"]]]],
-            {"order": "name desc", "limit": 1},
+            [[["sheet_id", "=", week_time["id"]]]],
+            {"fields": ["id", "total_attendance"], "order": "name desc", "limit": 1},
         )[0]
-        week_time = last_timesheet
 
         return (
             get_str_from_timesheet(day_time),
