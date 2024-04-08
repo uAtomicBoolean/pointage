@@ -142,7 +142,7 @@ class Pointage:
                 with zipfile.ZipFile(tmp_file.name) as zip:
                     zip.extractall("/tmp")
 
-        print("Building the script...")        
+        print("Building the script...")
         subprocess.call(f"chmod u+x {build_script}", shell=True)
         subprocess.call(f"{build_script} /tmp/pointage-main/src", shell=True)
         subprocess.call(f"sudo mv pointage /usr/bin/pointage", shell=True)
