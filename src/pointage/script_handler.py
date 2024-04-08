@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import urllib.request
 from .odoo_client import OdooClient
 from .colors import red, green, bold
 
@@ -20,7 +21,8 @@ class Pointage:
         self.subparsers = self.parser.add_subparsers(help="Liste des commandes.")
 
         self.build_parser_presence()
-        self.build_parser_subcommands()
+        self.build_parser_last()
+        self.build_parser_time()
 
         self.odoo_client = OdooClient()
 
@@ -51,7 +53,7 @@ class Pointage:
             nargs="?",
         )
 
-    def build_parser_subcommands(self):
+    def build_parser_last(self):
         # Commande last pour afficher les N derniers pointages.
         cmd_last = self.subparsers.add_parser(
             "last", help="Affiche le dernier pointage."
@@ -64,13 +66,17 @@ class Pointage:
             help="Le nombre de lignes à afficher.",
             type=int,
         )
-
+    
+    def build_parser_time(self):
         # Commande time pour afficher le temps travaille.
         cmd_time = self.subparsers.add_parser(
             "time", help="Affiche le temps de travail de la journée actuelle."
         )
         cmd_time.set_defaults(func=self.time)
 
+    # ------------------------------- #
+    # Args handlers                   #
+    # ------------------------------- #
     def parse(self) -> argparse.Namespace:
         """Wrapper pour le parsing des arguments du script."""
 

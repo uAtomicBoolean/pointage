@@ -1,6 +1,6 @@
 import datetime
 from xmlrpc.client import ServerProxy
-from .credentials_manager import CredentialsManager
+from .data_manager import DataManager
 from .utils import get_season, get_str_from_timesheet
 
 
@@ -18,7 +18,7 @@ class OdooClient:
         else:
             self.season_offset = -1
 
-        credentials = CredentialsManager()
+        credentials = DataManager()
         self.username = credentials.get("id")
         self.pwd = credentials.get("pwd")
 

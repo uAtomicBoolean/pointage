@@ -4,7 +4,7 @@ import getpass
 import pathlib
 
 
-class CredentialsManager:
+class DataManager:
     """Manage the credentials for Odoo's API."""
 
     CONFIG_FOLDER = ".config/pointage"
@@ -12,9 +12,9 @@ class CredentialsManager:
 
     def __init__(self):
         self.home_path = str(pathlib.Path.home())
-        self.config_folder_path = f"{self.home_path}/{CredentialsManager.CONFIG_FOLDER}"
+        self.config_folder_path = f"{self.home_path}/{DataManager.CONFIG_FOLDER}"
         self.config_file_path = (
-            f"{self.config_folder_path}/{CredentialsManager.FILENAME}"
+            f"{self.config_folder_path}/{DataManager.FILENAME}"
         )
 
         # Check if the configuration folder does exists.
