@@ -1,5 +1,9 @@
+import shutil
+import zipfile
 import argparse
 import datetime
+import tempfile
+import subprocess
 import urllib.request
 from .odoo_client import OdooClient
 from .colors import red, green, bold
@@ -23,6 +27,7 @@ class Pointage:
         self.build_parser_presence()
         self.build_parser_last()
         self.build_parser_time()
+        self.build_parser_update()
 
         self.odoo_client = OdooClient()
 
@@ -73,6 +78,13 @@ class Pointage:
             "time", help="Affiche le temps de travail de la journée actuelle."
         )
         cmd_time.set_defaults(func=self.time)
+    
+    def build_parser_update(self):
+        cmd_update = self.subparsers.add_parser(
+            "update",
+            help="Met à jour le script automatiquement."
+        )
+        cmd_update.set_defaults(func=self.update)
 
     # ------------------------------- #
     # Args handlers                   #
@@ -116,3 +128,27 @@ class Pointage:
         day_time, week_time = self.odoo_client.get_current_time()
         print(bold("Journée actuelle :"), day_time)
         print(bold("Semaine actuelle :"), week_time)
+
+    def update(self, _: argparse.Namespace):
+        """Update the script."""
+
+        zip_file_url = "https://github.com/uAtomicBoolean/pointage/archive/refs/heads/main.zip"
+        dest_folder = "/tmp"
+        build_script = "/tmp/pointage-main/build_script.sh ~/bin"
+
+        print("Downloading the script sources...")
+        # Download and unzip the script source.
+        with urllib.request.urlopen(zip_file_url) as response:
+            with tempfile.NamedTemporaryFile() as tmp_file:
+                shutil.copyfileobj(response, tmp_file)
+                with zipfile.ZipFile(tmp_file.name) as zip:
+                    zip.extractall(dest_folder)
+
+        print("Building the script...")        
+        subprocess.call(f"chmod u+x {build_script}", shell=True)
+        subprocess.call(f"{build_script}", shell=True)
+
+        print("Cleaning after update...")
+        subprocess.call(f"rm -rf {dest_folder}/pointage-main", shell=True)
+
+        print("Update done !")
