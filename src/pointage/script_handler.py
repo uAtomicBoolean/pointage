@@ -134,7 +134,7 @@ class Pointage:
 
         zip_file_url = "https://github.com/uAtomicBoolean/pointage/archive/refs/heads/main.zip"
         dest_folder = "/tmp"
-        build_script = "/tmp/pointage-main/build_script.sh ~/bin"
+        build_script = "/tmp/pointage-main/build_script.sh ~/bin/pointage"
 
         print("Downloading the script sources...")
         # Download and unzip the script source.
