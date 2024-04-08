@@ -133,22 +133,21 @@ class Pointage:
         """Update the script."""
 
         zip_file_url = "https://github.com/uAtomicBoolean/pointage/archive/refs/heads/main.zip"
-        dest_folder = "/tmp"
-        build_script = "/tmp/pointage-main/build_script.sh ~/bin/pointage"
+        build_script = "/tmp/pointage-main/build_script.sh"
 
         print("Downloading the script sources...")
-        # Download and unzip the script source.
         with urllib.request.urlopen(zip_file_url) as response:
             with tempfile.NamedTemporaryFile() as tmp_file:
                 shutil.copyfileobj(response, tmp_file)
                 with zipfile.ZipFile(tmp_file.name) as zip:
-                    zip.extractall(dest_folder)
+                    zip.extractall("/tmp")
 
         print("Building the script...")        
         subprocess.call(f"chmod u+x {build_script}", shell=True)
-        subprocess.call(f"{build_script}", shell=True)
+        subprocess.call(f"{build_script} /tmp/pointage-main/src", shell=True)
+        subprocess.call(f"sudo mv pointage /usr/bin/pointage", shell=True)
 
         print("Cleaning after update...")
-        subprocess.call(f"rm -rf {dest_folder}/pointage-main", shell=True)
+        subprocess.call(f"rm -rf /tmp/pointage-main", shell=True)
 
         print("Update done !")

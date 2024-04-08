@@ -1,10 +1,9 @@
 #!/bin/bash
-# You can specify the destination path of the script as an argument.
 
-file_dest="pointage"
+source_path="src"
 if [ ! -z $1 ];
 then
-	file_dest=$1
+	source_path=$1
 fi
 
-python3 -m zipapp src -o $file_dest -p "/usr/bin/python3" -c
+python3 -m zipapp $source_path -o pointage -p "/usr/bin/python3" -c
