@@ -45,14 +45,14 @@ class Pointage:
         cmd_sortie.set_defaults(func=self.pointe_presence, action="sortie")
         cmd_entree.add_argument(
             "offset",
-            help="Décalage en minutes par rapport à l'heure actuelle.",
+            help="Soit un offset, soit une heure (ex: 12h30, 12H30, 12:30)",
             type=str,
             default="0",
             nargs="?",
         )
         cmd_sortie.add_argument(
             "offset",
-            help="Décalage en minutes par rapport à l'heure actuelle.",
+            help="Soit un offset, soit une heure (ex: 12h30, 12H30, 12:30)",
             type=str,
             default="0",
             nargs="?",
