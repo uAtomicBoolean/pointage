@@ -162,9 +162,9 @@ class Pointage:
         print("Building the script...")
         subprocess.call(f"chmod u+x {build_script}", shell=True)
         subprocess.call(f"{build_script} /tmp/pointage-main/src {tmp_filename}", shell=True)
-        subprocess.call(f"sudo cp {tmp_filename} /usr/local/bin/pointage", shell=True)
+        subprocess.call(f"sudo mv {tmp_filename} /usr/local/bin/pointage", shell=True)
 
         print("Cleaning after update...")
-        # subprocess.call(f"rm -rf /tmp/pointage-main", shell=True)
+        subprocess.call(f"rm -rf /tmp/pointage-main", shell=True)
 
         print("Update done !")
