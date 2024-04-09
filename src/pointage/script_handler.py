@@ -155,7 +155,7 @@ class Pointage:
         with urllib.request.urlopen(zip_file_url) as response:
             with tempfile.NamedTemporaryFile() as tmp_file:
                 shutil.copyfileobj(response, tmp_file)
-                tmp_filename = tmp_file.name.split("/")[2]
+                tmp_filename = tmp_file.name + "_script"
                 with zipfile.ZipFile(tmp_file.name) as zip:
                     zip.extractall("/tmp")
 
