@@ -46,15 +46,15 @@ class Pointage:
         cmd_entree.add_argument(
             "offset",
             help="Décalage en minutes par rapport à l'heure actuelle.",
-            type=int,
-            default=0,
+            type=str,
+            default="0",
             nargs="?",
         )
         cmd_sortie.add_argument(
             "offset",
             help="Décalage en minutes par rapport à l'heure actuelle.",
-            type=int,
-            default=0,
+            type=str,
+            default="0",
             nargs="?",
         )
 
@@ -95,8 +95,24 @@ class Pointage:
         return self.parser.parse_args()
 
     def pointe_presence(self, args: argparse.Namespace):
+        # Check the offset and convert it to minutes if necessary.
+        try:
+            offset = int(args.offset)
+        except ValueError:
+            try:
+                raw_hour = args.offset.lower().replace("h", ":")
+                hour = datetime.datetime.strptime(raw_hour, "%H:%M")
+                full_date = datetime.datetime.combine(datetime.date.today(), hour.time())
+
+                # Convert the fulldate to an integer offset.
+                time_diff = full_date - datetime.datetime.now()
+                offset = int(time_diff.total_seconds() // 60)
+            except:
+                print("Erreur dans le formatage de l'heure (ex: 12H30, 12h30, 12:30).")
+                return
+
         attendance_id, date_pointage = self.odoo_client.add_attendance(
-            args.action, args.offset
+            args.action, offset
         )
         if attendance_id == -1:
             print(f"Erreur lors de la création du pointage (action: {args.action}).")
