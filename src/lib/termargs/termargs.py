@@ -1,12 +1,14 @@
 import sys
 import errors
-from typing import Any, Union, List, Tuple
+from typing import Any, Union, List
 from dataclasses import dataclass, field
 
 
 @dataclass
 class Argument:
-    names: Tuple[str]
+    # Using list instead of Tuple because a tuple of one element transforms into the element.
+    # Ex: ('test') transforms into 'test'.
+    names: List[str]
     description: str
     standalone: bool = False
 
@@ -20,6 +22,7 @@ class Argument:
 
 @dataclass
 class ArgumentData(Argument):
+    var_name: str = None
     type: "type" = None
     required: bool = True
     default: Any = None
@@ -52,9 +55,11 @@ class TermArgs:
                 first_defaults = len(func_args) - len(defaults)
 
             arg_counter = 0
-            for _, annot in func_args.items():
+            for var_name, annot in func_args.items():
                 arg_data = ArgumentData(
-                    **annot.__metadata__[0].dict(), type=annot.__args__[0]
+                    **annot.__metadata__[0].dict(),
+                    type=annot.__args__[0],
+                    var_name=var_name,
                 )
                 if arg_counter >= first_defaults:
                     arg_data.default = defaults.pop(0)
@@ -72,8 +77,20 @@ class TermArgs:
 
         return cmd_func
 
-    def _get_arg(self, arg_name: str) -> Union[ArgumentData, None]:
-        return None
+    def _get_arg(self, command: Command, arg_name: str) -> Union[ArgumentData, None]:
+        """Only works on non-positional arguments (ex: -p)."""
+
+        for arg_data in command.args:
+            if arg_name.startswith("-") and arg_name in arg_data.names:
+                return arg_data
+
+    def _validate_arg(
+        self, arg_data: ArgumentData, value: Any, current_arg_name: str
+    ) -> Any:
+        try:
+            return arg_data.type(value)
+        except ValueError:
+            raise errors.WrongValueForArgument(current_arg_name, value, arg_data.type)
 
     def execute(self):
         if len(sys.argv) < 2:
@@ -90,27 +107,51 @@ class TermArgs:
         if not command:
             raise errors.CommandNotFound(command_name)
 
-        req_args = list(filter(lambda a: a.required, command.args))
+        input_args = sys.argv[2:]
+
+        required_args = list(filter(lambda a: a.required, command.args))
 
         # List that will store the interpreted required arguments in the right order.
         # The order is determined by the order of the command.args list.
-        inter_req_args = [None] * len(req_args)
+        inter_req_args = [None] * len(required_args)
         # Same as above but for the optionals arguments and the order doesn't need to be respected.
         inter_opt_args = dict()
 
-        # TODO On itere tant que la liste n'est pas vide (ie boucle while).
-        #   Avoir un cpt qui tient compte du nombre des args obligatoires interpretes.
-        #   Quand on a fini de traiter un argument, on utilise list.pop()
-        #   Quand on tombe sur un argument optionnel, alors on l'interprete :
-        #       - si c'est un standalone, alors trkl.
-        #       - sinon, il faut aussi récupérer la valeur suivante et on pop deux fois.
+        while input_args:
+            current_arg = input_args.pop(0)
+
+            # Working on an optional argument.
+            if arg_data := self._get_arg(command, current_arg):
+                if arg_data.standalone:
+                    inter_opt_args[arg_data.var_name] = True
+                    continue
+
+                try:
+                    arg_value = input_args.pop(0)
+                except IndexError:
+                    raise errors.MissingValueForArgument(current_arg)
+
+                # Checking if the next value is not an argument.
+                if self._get_arg(command, arg_value):
+                    raise errors.MissingValueForArgument(current_arg)
+
+                inter_opt_args[arg_data.var_name] = self._validate_arg(
+                    arg_data, arg_value, current_arg
+                )
+
+            # TODO Gestion des arguments.
+            #   Deux types d'arguments : positionels et sans-position (ex: -p).
+            #   Il faut changer la gestion des arguments en -
+            #   Si l'argument est required, alors il faut l'insérer à la bonne positiond dans la inter_req_list.
+            #   Sinon, on le met dans le dictionnaire.
+            # Puis on gère les arguments positionel.
+            if required_args:
+                req_arg = required_args.pop(0)
+                print(req_arg)
+
         #   Quand on tombe sur une chaine de caractères qui n'est pas un argument, alors on regarde si c'est un argument req.
         #   Si ce n'est pas le cas -> raise erreur.
         #   Sinon, on l'interprete, on increment le cpt et on pop.
         #   Puis on l'ajoute dans la liste à la bonne position.
 
-        # TODO Que veut dire 'interpreter un argument' ?
-        #   - On tente de le caster dans le bon type.
-        #   - Si erreur alors -> raise erreur.
-
-        return command.exec_func()
+        return command.exec_func(*inter_req_args, **inter_opt_args)
