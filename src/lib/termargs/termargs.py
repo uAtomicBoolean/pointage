@@ -210,7 +210,7 @@ class TermArgs:
 
         # TODO Il va falloir changer le fonctionnement du cette fonction
         # pour implémenter la commande root et les subcommands.
-        if len(sys.argv) < 2 and:
+        if len(sys.argv) < 2:
             print("Missing command name.")
             return
 
