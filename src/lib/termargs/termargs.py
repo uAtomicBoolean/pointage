@@ -4,9 +4,10 @@ from typing import Any, Union, List, Tuple
 from command import ArgumentData, Command
 
 
-# TODO add tab autocompletion support.
+# TODO Rework the command decorator to clean it.
+#       Use : inspect.signature() and typing.get_type_hints()
+# TODO add tab autocompletion support (if possible).
 # TODO add root command support.
-# TODO add subcommand support.
 # TODO add help args support (always present and takes priority on all other args).
 class TermArgs:
     """Creates and manages the commands used in the script."""
