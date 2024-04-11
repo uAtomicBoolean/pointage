@@ -1,11 +1,10 @@
 import sys
 import errors
-from typing import Any, Union, List, Tuple
+import inspect
+from typing import Any, Union, List, Tuple, get_type_hints
 from command import ArgumentData, Command
 
 
-# TODO Rework the command decorator to clean it.
-#       Use : inspect.signature() and typing.get_type_hints()
 # TODO add tab autocompletion support (if possible).
 # TODO add root command support.
 # TODO add help args support (always present and takes priority on all other args).
@@ -46,28 +45,23 @@ class TermArgs:
             cmd = Command(name, line_desc, func.__doc__)
             cmd.exec_func = func
 
-            func_args = func.__annotations__
+            signature = inspect.signature(func)
+            type_hints = get_type_hints(func)
 
-            # This simplify the defaults management when creating the arguments data.
-            defaults = None if not func.__defaults__ else list(func.__defaults__)
-            first_defaults = len(func_args) + 1
-            if defaults:
-                first_defaults = len(func_args) - len(defaults)
-
-            arg_counter = 0
-            for var_name, annot in func_args.items():
+            for p_name, param in signature.parameters.items():
+                argument = param.annotation.__metadata__[0]
                 arg_data = ArgumentData(
-                    **annot.__metadata__[0].dict(),
-                    type=annot.__args__[0],
-                    var_name=var_name,
+                    **argument.dict(),
+                    type=type_hints[p_name],
+                    var_name=p_name,
                 )
-                if arg_counter >= first_defaults:
-                    arg_data.default = defaults.pop(0)
+
+                if param.default != inspect._empty:
+                    arg_data.default = param.default
                     arg_data.required = False
                     arg_data.has_default = True
 
                 cmd.args.append(arg_data)
-                arg_counter += 1
 
             if name == "root_function_protected":
                 cmd.is_root_command = True
