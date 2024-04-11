@@ -6,6 +6,8 @@ from command import ArgumentData, Command
 
 
 # TODO add tab autocompletion support (if possible).
+# TODO Clean (and rework ?) the interprete_args function.
+#      Ex : create function like parse_next_arg() that returns the next argument parsed (hence returns its value).
 # TODO add help args support (always present and takes priority on all other args).
 class TermArgs:
     """Creates and manages the commands used in the script."""
