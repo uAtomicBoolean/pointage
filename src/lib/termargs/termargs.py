@@ -6,7 +6,7 @@ from command import ArgumentData, Command
 
 
 # TODO add tab autocompletion support (if possible).
-# TODO add root command support.
+# TODO Try to find a better way to interpret the arguments.
 # TODO add help args support (always present and takes priority on all other args).
 class TermArgs:
     """Creates and manages the commands used in the script."""
@@ -203,29 +203,27 @@ class TermArgs:
             errors.CommandNotFound: Raised when a command is not found.
         """
 
-        # TODO Il va falloir changer le fonctionnement du cette fonction
-        # pour implémenter la commande root et les subcommands.
-        if len(sys.argv) < 2:
-            print("Missing command name.")
+        # Get the command.
+        if len(sys.argv) == 1:
+            print("Print help content")
             return
 
-        # Get the command
         command_name = sys.argv[1]
         command = None
         for cmd in TermArgs.__commands_list:
-            if cmd.name == command_name:
+            if command_name == cmd.name:
                 command = cmd
+                break
 
-        if TermArgs.__root_command:
+        # We use the root command if no command was found.
+        if not command and TermArgs.__root_command:
             command = TermArgs.__root_command
+            input_args = sys.argv[1:]
+        else:
+            input_args = sys.argv[2:]
 
         if not command:
             raise errors.CommandNotFound(command_name)
 
-        if command.is_root_command:
-            input_args = sys.argv[1:]
-        else:
-            input_args = sys.argv[2:]
         pos_args, non_pos_args = self._interpret_args(command, input_args)
-
         command.exec_func(*pos_args, **non_pos_args)
