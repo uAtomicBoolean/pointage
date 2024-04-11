@@ -17,6 +17,7 @@ def test(
         Argument(["number"], "A number to display."),
     ],
     name: Annotated[str, Argument(["-n", "--name"], "Set the name.")],
+    surname: Annotated[str, Argument(["surname"], "Your surname.")] = "",
     enable: Annotated[
         str,
         Argument(["-e"], "Enable the thing.", standalone=True, standalone_value=True),

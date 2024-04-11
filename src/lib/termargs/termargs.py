@@ -6,7 +6,6 @@ from command import ArgumentData, Command
 
 
 # TODO add tab autocompletion support (if possible).
-# TODO Try to find a better way to interpret the arguments.
 # TODO add help args support (always present and takes priority on all other args).
 class TermArgs:
     """Creates and manages the commands used in the script."""
@@ -145,7 +144,7 @@ class TermArgs:
         while input_args:
             current_arg = input_args.pop(0)
 
-            # Working on an non-positional arguments.
+            # Working on non-positional arguments.
             if arg := self._get_arg(command, current_arg):
                 if arg.is_interpreted:
                     raise errors.ArgumentAlreadyInterpreted(current_arg)
@@ -225,5 +224,9 @@ class TermArgs:
         if not command:
             raise errors.CommandNotFound(command_name)
 
-        pos_args, non_pos_args = self._interpret_args(command, input_args)
-        command.exec_func(*pos_args, **non_pos_args)
+        try:
+            pos_args, non_pos_args = self._interpret_args(command, input_args)
+            command.exec_func(*pos_args, **non_pos_args)
+        except errors.MissingValueForArgument as err:
+            print(f"Error: \t{err}")
+            print(f"\tUse '{command_name} -h/--help' to check how to use the command.")

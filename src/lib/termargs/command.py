@@ -51,3 +51,6 @@ class Command:
     args: List[ArgumentData] = field(default_factory=list)
     exec_func = None
     is_root_command: bool = False
+
+    def build_example(self) -> str:
+        return "example command."
