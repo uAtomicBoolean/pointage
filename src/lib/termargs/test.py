@@ -1,7 +1,13 @@
 from typing import Annotated
-from termargs import TermArgs, Argument
+from termargs import TermArgs
+from command import Argument
 
 commands = TermArgs()
+
+
+@commands.root()
+def root(name: Annotated[str, Argument(["name"], "Your name")]):
+    print(f"Hello {name} !")
 
 
 @commands.command("test", "A simple command to test termargs.")

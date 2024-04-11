@@ -1,16 +1,24 @@
 import sys
 import errors
 from typing import Any, Union, List, Tuple
-from command import Argument, ArgumentData, Command
+from command import ArgumentData, Command
 
 
 # TODO add tab autocompletion support.
 # TODO add root command support.
 # TODO add subcommand support.
+# TODO add help args support (always present and takes priority on all other args).
 class TermArgs:
     """Creates and manages the commands used in the script."""
 
+    __root_command: Command = None
     __commands_list: List[Command] = list()
+
+    @classmethod
+    def root(cls):
+        return TermArgs.command(
+            "root_function_protected", "root_function_protected_description"
+        )
 
     @classmethod
     def command(cls, name: str, line_desc: str):
@@ -41,7 +49,7 @@ class TermArgs:
 
             # This simplify the defaults management when creating the arguments data.
             defaults = None if not func.__defaults__ else list(func.__defaults__)
-            first_defaults = 0
+            first_defaults = len(func_args) + 1
             if defaults:
                 first_defaults = len(func_args) - len(defaults)
 
@@ -60,6 +68,9 @@ class TermArgs:
                 cmd.args.append(arg_data)
                 arg_counter += 1
 
+            if name == "root_function_protected":
+                cmd.is_root_command = True
+                TermArgs.__root_command = cmd
             TermArgs.__commands_list.append(cmd)
 
             def wrapper(*args, **kargs):
@@ -197,13 +208,9 @@ class TermArgs:
             errors.CommandNotFound: Raised when a command is not found.
         """
 
-        # TODO Cette vérification va devoir changer.
-        #   Il faut pouvoir gérer le cas dans lequel on ne veut pas de commande et on
-        #   veut directement ajouter les arguments sur la racine.
-        #   Pour cela, il faut ajouter la gestion d'une commande qui n'a pas de nom.
-        #   Si on ne trouve pas de commande mais qu'une commande 'root' a été définie, alors
-        #   on l'exécute, sinon on ne retourne rien.
-        if len(sys.argv) < 2:
+        # TODO Il va falloir changer le fonctionnement du cette fonction
+        # pour implémenter la commande root et les subcommands.
+        if len(sys.argv) < 2 and:
             print("Missing command name.")
             return
 
@@ -214,10 +221,16 @@ class TermArgs:
             if cmd.name == command_name:
                 command = cmd
 
+        if TermArgs.__root_command:
+            command = TermArgs.__root_command
+
         if not command:
             raise errors.CommandNotFound(command_name)
 
-        input_args = sys.argv[2:]
+        if command.is_root_command:
+            input_args = sys.argv[1:]
+        else:
+            input_args = sys.argv[2:]
         pos_args, non_pos_args = self._interpret_args(command, input_args)
 
         command.exec_func(*pos_args, **non_pos_args)

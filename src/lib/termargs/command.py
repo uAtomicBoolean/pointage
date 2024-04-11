@@ -1,3 +1,4 @@
+from typing import Any, List
 from dataclasses import dataclass, field
 
 
@@ -49,3 +50,4 @@ class Command:
     full_description: str
     args: List[ArgumentData] = field(default_factory=list)
     exec_func = None
+    is_root_command: bool = False
