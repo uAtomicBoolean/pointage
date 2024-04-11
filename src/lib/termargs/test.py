@@ -4,26 +4,28 @@ from termargs import TermArgs, Argument
 commands = TermArgs()
 
 
-@commands.command("test")
+@commands.command("test", "A simple command to test termargs.")
 def test(
     number: Annotated[
         int,
         Argument(["number"], "A number to display."),
     ],
-    again: Annotated[int, Argument(["again"], "again")],
-    name: Annotated[int, Argument(["-n"], "Set the name.")],
-    enable: Annotated[str, Argument(["-e"], "Enable the thing.", True)] = False,
+    name: Annotated[str, Argument(["-n", "--name"], "Set the name.")],
+    enable: Annotated[
+        str,
+        Argument(["-e"], "Enable the thing.", standalone=True, standalone_value=True),
+    ] = False,
 ):
-    """Commande de test."""
+    """
+    Commande de test.
+    Cette commande va réaliser plusieurs actions en fonction d'autres choses.
+    On peut mettre toutes les indications que l'on veut dans cette doc pour qu'elles soient affichées avec la commande help.
+    """
 
     print(f"number : {number}")
-    print(f"again : {again}")
     print(f"name : {name}")
     print(f"enable : {enable}")
 
 
 if __name__ == "__main__":
-    try:
-        commands.execute()
-    except Exception as err:
-        print(f"Error : {err}")
+    commands.execute()
