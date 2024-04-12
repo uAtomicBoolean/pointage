@@ -34,7 +34,8 @@ class UpdateCommand:
         print("Building the script...")
         subprocess.call(f"chmod u+x {build_script}", shell=True)
         subprocess.call(
-            f"{build_script} /tmp/pointage-main/pointage {tmp_filename}", shell=True
+            f"sudo {build_script} /tmp/pointage-main/src {tmp_filename}",
+            shell=True,
         )
         subprocess.call(f"sudo mv {tmp_filename} /usr/local/bin/pointage", shell=True)
 
