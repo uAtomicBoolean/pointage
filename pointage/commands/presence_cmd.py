@@ -1,5 +1,5 @@
 import datetime
-from ..odoo_client import OdooClient
+from lib.odoo_client import OdooClient
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 

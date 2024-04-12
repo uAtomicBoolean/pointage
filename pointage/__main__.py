@@ -1,6 +1,6 @@
 import argparse
-from pointage.odoo_client import OdooClient
-from pointage.commands import *
+from lib.odoo_client import OdooClient
+from commands import *
 
 
 def main():

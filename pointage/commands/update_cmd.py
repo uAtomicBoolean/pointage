@@ -3,7 +3,7 @@ import zipfile
 import tempfile
 import subprocess
 import urllib.request
-from ..odoo_client import OdooClient
+from lib.odoo_client import OdooClient
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 

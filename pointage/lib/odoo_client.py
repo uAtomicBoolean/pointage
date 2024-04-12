@@ -1,7 +1,7 @@
 import datetime
 from xmlrpc.client import ServerProxy
 from .data_manager import DataManager
-from .utils.time_functions import get_season, get_str_from_timesheet
+from .time_functions import get_season, get_str_from_timesheet
 
 
 class OdooClient:
