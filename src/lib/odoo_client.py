@@ -1,7 +1,7 @@
 import datetime
 from xmlrpc.client import ServerProxy
 from .data_manager import DataManager
-from .time_functions import get_season, get_str_from_timesheet
+from .time_functions import get_seasonal_offset, get_str_from_timesheet
 
 
 class OdooClient:
@@ -13,10 +13,7 @@ class OdooClient:
     ATT_ACTIONS = {"entree": "sign_in", "sortie": "sign_out"}
 
     def __init__(self):
-        if get_season(datetime.datetime.now()) in ["spring", "summer"]:
-            self.season_offset = -2
-        else:
-            self.season_offset = -1
+        self.season_offset = get_seasonal_offset(datetime.datetime.now())
 
         credentials = DataManager()
         self.username = credentials.get("id")
@@ -93,6 +90,11 @@ class OdooClient:
         )
 
         return last_atts
+
+    def delete(self, id: int):
+        return self.models.execute_kw(
+            OdooClient.DB, self.uid, self.pwd, "hr.attendance", "unlink", [[id]]
+        )
 
     def get_current_time(self):
         week_time = self.models.execute_kw(

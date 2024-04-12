@@ -1,6 +1,7 @@
 import datetime
 from lib.colors import *
 from lib.odoo_client import OdooClient
+from lib.time_functions import get_fixed_timestamp
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 
@@ -25,8 +26,7 @@ class LastCommand:
         last_atts = self.odoo_client.get_last_x_attendance(args.limit)
 
         for att in last_atts:
-            date = datetime.datetime.strptime(att["name"], "%Y-%m-%d %H:%M:%S")
-            att["name"] = date + datetime.timedelta(hours=1)
+            att["name"] = get_fixed_timestamp(att["name"])
             action_name = [
                 act
                 for act, o_act in OdooClient.ATT_ACTIONS.items()

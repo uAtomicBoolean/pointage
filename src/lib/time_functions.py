@@ -1,7 +1,7 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 
-def get_season(now):
+def get_seasonal_offset(now) -> int:
     """
     Based on :
     https://stackoverflow.com/questions/16139306/determine-season-given-timestamp-in-python-using-datetime
@@ -18,7 +18,18 @@ def get_season(now):
     if isinstance(now, datetime):
         now = now.date()
     now = now.replace(year=Y)
-    return next(season for season, (start, end) in seasons if start <= now <= end)
+    if next(season for season, (start, end) in seasons if start <= now <= end) in (
+        "spring",
+        "summer",
+    ):
+        return -2
+    return -1
+
+
+def get_fixed_timestamp(timestamp: str):
+    offset = -get_seasonal_offset(datetime.now())
+    date = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+    return date + timedelta(hours=offset)
 
 
 def get_str_from_timesheet(timesheet) -> str:
