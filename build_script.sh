@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source_path="src"
+source_path="pointage"
 dest_path="pointage"
 if [ ! -z $1 ];
 then
