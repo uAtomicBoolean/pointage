@@ -1,7 +1,7 @@
 import datetime
 from xmlrpc.client import ServerProxy
 from .data_manager import DataManager
-from .utils import get_season, get_str_from_timesheet
+from .utils.time_functions import get_season, get_str_from_timesheet
 
 
 class OdooClient:
@@ -115,7 +115,4 @@ class OdooClient:
             {"fields": ["id", "total_attendance"], "order": "name desc", "limit": 1},
         )[0]
 
-        return (
-            get_str_from_timesheet(day_time),
-            get_str_from_timesheet(week_time)
-        )
+        return (get_str_from_timesheet(day_time), get_str_from_timesheet(week_time))

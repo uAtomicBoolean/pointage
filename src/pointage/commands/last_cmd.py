@@ -1,5 +1,5 @@
 import datetime
-from ..colors import *
+from ..utils.colors import *
 from ..odoo_client import OdooClient
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 
