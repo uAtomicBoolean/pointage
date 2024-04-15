@@ -107,6 +107,7 @@ class OdooClient:
             {"fields": ["id", "total_attendance"], "limit": 1},
         )[0]
 
+        # TODO Gerer l'erreur quand aucune attendance n'a ete creee.
         day_time = self.models.execute_kw(
             OdooClient.DB,
             self.uid,
