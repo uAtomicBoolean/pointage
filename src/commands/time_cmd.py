@@ -19,7 +19,7 @@ class TimeCommand:
         day_time, week_time = self.odoo_client.get_current_time()
 
         hours, minutes = day_time.split("h")
-        
+
         # Calculating the remaining time to work for a day of 7 hours.
         day_seconds = 3600 * 7
         worked_seconds = datetime.timedelta(hours=int(hours), minutes=int(minutes)).seconds
@@ -40,7 +40,6 @@ class TimeCommand:
                 str_overtime = f"(+{minutes}m)"
             else:
                 str_overtime = f"(+{minutes // 60}h{minutes % 60})"
-
 
         print(bold("Journée actuelle :"), day_time)
         print(bold("Semaine actuelle :"), week_time)
