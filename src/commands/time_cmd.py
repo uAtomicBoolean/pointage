@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, datetime, timedelta
 from lib.colors import *
 from typing import Tuple
 from lib.odoo_client import OdooClient
@@ -19,34 +19,35 @@ class TimeCommand:
     def execute(self, _: Namespace):
         day_time, week_time = self.odoo_client.get_current_time()
 
-        exit_time, overtime = self.get_exit_hour(day_time)
+        exit_time_d, overtime_d = self.get_exit_hour(day_time)
+        exit_time_w, overtime_w = self.get_exit_hour(week_time, 3600 * 7 * 5)
 
-        print(bold("Journée actuelle          :"), day_time)
-        print(bold("Semaine actuelle          :"), week_time)
+        exit_time_d = exit_time_d if not overtime_d else f"{exit_time_d} {overtime_d}"
+        exit_time_w = exit_time_w if not overtime_w else f"{exit_time_w} {overtime_w}"
+
         print(
-            bold("Fin de journée à          :"),
-            exit_time.strftime("%Hh%M"),
-            convert_seconds_to_strtime(overtime),
+            f"{bold('Journée actuelle :')} {day_time} {faint(f'(sortie : {exit_time_d})')}"
         )
-        print(bold("Heures supp de la semaine :"), self.odoo_client.get_week_overtime())
+        print(
+            f"{bold('Journée actuelle :')} {week_time} {faint(f'(sortie : {exit_time_w})')}"
+        )
 
-    def get_exit_hour(self, day_time: str) -> Tuple[datetime.datetime, int]:
-        """Return the hour at which the user finish is day + the current overtime."""
+    def get_exit_hour(
+        self, day_time: str, base_seconds: int = 25200
+    ) -> Tuple[str, int]:
+        """Return the hour at which the user finish + the current overtime."""
 
         hours, minutes = day_time.split("h")
 
-        # Calculating the remaining time to work for a day of 7 hours.
-        day_seconds = 3600 * 7
-        worked_seconds = datetime.timedelta(
-            hours=int(hours), minutes=int(minutes)
-        ).seconds
+        worked_seconds = int(hours) * 3600 + int(minutes) * 60
 
         overtime = 0
-        if day_seconds < worked_seconds:
-            overtime = worked_seconds - day_seconds
-            worked_seconds = day_seconds
+        if base_seconds < worked_seconds:
+            overtime = worked_seconds - base_seconds
+            worked_seconds = base_seconds
 
-        delta_seconds = day_seconds - worked_seconds
-        delta = datetime.timedelta(seconds=delta_seconds)
-        exit_time = datetime.datetime.now() + delta
-        return exit_time, overtime
+        delta_seconds = base_seconds - worked_seconds
+        delta = timedelta(seconds=delta_seconds)
+        exit_time = datetime.now() + delta
+
+        return exit_time.strftime("%Hh%M"), convert_seconds_to_strtime(overtime)

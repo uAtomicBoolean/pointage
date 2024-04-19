@@ -61,7 +61,7 @@ def convert_seconds_to_strtime(seconds: int):
     if seconds:
         minutes = seconds // 60
         if minutes < 60:
-            return f"(+{minutes}m)"
+            return f"+{minutes}m"
         else:
-            return f"(+{minutes // 60}h{minutes % 60})"
+            return f"+{minutes // 60}h{minutes % 60}"
     return ""
