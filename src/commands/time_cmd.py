@@ -29,7 +29,7 @@ class TimeCommand:
             f"{bold('Journée actuelle :')} {day_time} {faint(f'(sortie : {exit_time_d})')}"
         )
         print(
-            f"{bold('Journée actuelle :')} {week_time} {faint(f'(sortie : {exit_time_w})')}"
+            f"{bold('Semaine actuelle :')} {week_time} {faint(f'(sortie : {exit_time_w})')}"
         )
 
     def get_exit_hour(
