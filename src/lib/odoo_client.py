@@ -1,7 +1,7 @@
 import datetime
 from xmlrpc.client import ServerProxy
 from .data_manager import DataManager
-from .time_functions import get_seasonal_offset, get_str_from_timesheet
+from .time_functions import get_seasonal_offset, get_str_from_float_time
 
 
 class OdooClient:
@@ -35,17 +35,15 @@ class OdooClient:
 
         return ServerProxy(f"{OdooClient.URL}/object")
 
+    def execute(self, model: str, function: str, *args):
+        return self.models.execute_kw(
+            OdooClient.DB, self.uid, self.pwd, model, function, *args
+        )
+
     def get_user_employee_id(self) -> int:
         """Returns the ID of the employee linked to the user."""
 
-        return self.models.execute_kw(
-            OdooClient.DB,
-            self.uid,
-            self.pwd,
-            "hr.employee",
-            "search",
-            [[["user_id", "=", self.uid]]],
-        )[0]
+        return self.execute("hr.employee", "search", [[["user_id", "=", self.uid]]])[0]
 
     def add_attendance(self, action: str, offset: int):
         """Creates a new attendance on Odoo and returns its ID."""
@@ -66,23 +64,13 @@ class OdooClient:
         }
 
         try:
-            att_id = self.models.execute_kw(
-                OdooClient.DB,
-                self.uid,
-                self.pwd,
-                "hr.attendance",
-                "create",
-                [record_data],
-            )
+            att_id = self.execute("hr.attendance", "create", [record_data])
         except:
             att_id = -1
         return (att_id, now)
 
     def get_last_x_attendance(self, limit: int):
-        last_atts = self.models.execute_kw(
-            OdooClient.DB,
-            self.uid,
-            self.pwd,
+        last_atts = self.execute(
             "hr.attendance",
             "search_read",
             [[]],
@@ -92,30 +80,49 @@ class OdooClient:
         return last_atts
 
     def delete(self, id: int):
-        return self.models.execute_kw(
-            OdooClient.DB, self.uid, self.pwd, "hr.attendance", "unlink", [[id]]
-        )
+        return self.execute("hr.attendance", "unlink", [[id]])
 
     def get_current_time(self):
-        week_time = self.models.execute_kw(
-            OdooClient.DB,
-            self.uid,
-            self.pwd,
+        week_time = self.execute(
             "hr_timesheet_sheet.sheet",
             "search_read",
             [[["employee_id", "=", self.employee_id]]],
-            {"fields": ["id", "total_attendance"], "limit": 1},
+            {"fields": ["id", "total_attendance"], "order": "id desc", "limit": 1},
         )[0]
 
         # TODO Gerer l'erreur quand aucune attendance n'a ete creee.
-        day_time = self.models.execute_kw(
-            OdooClient.DB,
-            self.uid,
-            self.pwd,
+        day_time = self.execute(
             "hr_timesheet_sheet.sheet.day",
             "search_read",
             [[["sheet_id", "=", week_time["id"]]]],
             {"fields": ["id", "total_attendance"], "order": "name desc", "limit": 1},
         )[0]
 
-        return (get_str_from_timesheet(day_time), get_str_from_timesheet(week_time))
+        return (
+            get_str_from_float_time(day_time["total_attendance"]),
+            get_str_from_float_time(week_time["total_attendance"]),
+        )
+
+    def get_week_overtime(self) -> str:
+        week_id = self.execute(
+            "hr_timesheet_sheet.sheet",
+            "search_read",
+            [[["employee_id", "=", self.employee_id]]],
+            {"fields": ["id"], "order": "id desc", "limit": 1},
+        )[0]["id"]
+
+        days = self.execute(
+            "hr_timesheet_sheet.sheet.day",
+            "search_read",
+            [[["sheet_id", "=", week_id]]],
+            {
+                "fields": ["id", "total_attendance"],
+                "order": "name desc",
+            },
+        )
+
+        overtime = 0
+        for day in days:
+            if day["total_attendance"] > 7:
+                overtime += day["total_attendance"] - 7
+        return get_str_from_float_time(overtime)

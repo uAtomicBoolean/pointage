@@ -1,7 +1,8 @@
 import datetime
 from lib.colors import *
+from typing import Tuple
 from lib.odoo_client import OdooClient
-from lib.time_functions import get_str_from_timesheet
+from lib.time_functions import convert_seconds_to_strtime
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 
@@ -18,11 +19,27 @@ class TimeCommand:
     def execute(self, _: Namespace):
         day_time, week_time = self.odoo_client.get_current_time()
 
+        exit_time, overtime = self.get_exit_hour(day_time)
+
+        print(bold("Journée actuelle          :"), day_time)
+        print(bold("Semaine actuelle          :"), week_time)
+        print(
+            bold("Fin de journée à          :"),
+            exit_time.strftime("%Hh%M"),
+            convert_seconds_to_strtime(overtime),
+        )
+        print(bold("Heures supp de la semaine :"), self.odoo_client.get_week_overtime())
+
+    def get_exit_hour(self, day_time: str) -> Tuple[datetime.datetime, int]:
+        """Return the hour at which the user finish is day + the current overtime."""
+
         hours, minutes = day_time.split("h")
 
         # Calculating the remaining time to work for a day of 7 hours.
         day_seconds = 3600 * 7
-        worked_seconds = datetime.timedelta(hours=int(hours), minutes=int(minutes)).seconds
+        worked_seconds = datetime.timedelta(
+            hours=int(hours), minutes=int(minutes)
+        ).seconds
 
         overtime = 0
         if day_seconds < worked_seconds:
@@ -32,15 +49,4 @@ class TimeCommand:
         delta_seconds = day_seconds - worked_seconds
         delta = datetime.timedelta(seconds=delta_seconds)
         exit_time = datetime.datetime.now() + delta
-
-        str_overtime = ""
-        if overtime:
-            minutes = overtime // 60
-            if minutes < 60:
-                str_overtime = f"(+{minutes}m)"
-            else:
-                str_overtime = f"(+{minutes // 60}h{minutes % 60})"
-
-        print(bold("Journée actuelle :"), day_time)
-        print(bold("Semaine actuelle :"), week_time)
-        print(bold("Fin de journée à :"), exit_time.strftime("%Hh%M"), str_overtime)
+        return exit_time, overtime

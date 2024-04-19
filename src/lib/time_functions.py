@@ -32,10 +32,13 @@ def get_fixed_timestamp(timestamp: str):
     return date + timedelta(hours=offset)
 
 
-def get_str_from_timesheet(timesheet) -> str:
+def get_str_from_float_time(worked_hours: float) -> str:
     """Build a string of the time worked from a timesheet."""
 
-    str_time = str(timesheet["total_attendance"]).split(".")
+    if worked_hours == 0:
+        return "0h"
+
+    str_time = str(worked_hours).split(".")
 
     # Force the minutes to be 2 a digits number.
     # necessary to avoid an error where the str_minutes is only '9' instead
@@ -52,3 +55,13 @@ def get_str_from_timesheet(timesheet) -> str:
     minutes = ((60 * int(str_minutes)) // 100) + 1
 
     return f"{str_time[0]}h{str(minutes).zfill(2)}"
+
+
+def convert_seconds_to_strtime(seconds: int):
+    if seconds:
+        minutes = seconds // 60
+        if minutes < 60:
+            return f"(+{minutes}m)"
+        else:
+            return f"(+{minutes // 60}h{minutes % 60})"
+    return ""
