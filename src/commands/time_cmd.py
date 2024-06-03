@@ -22,6 +22,7 @@ class TimeCommand:
         if not day_time or not week_time:
             print(f"{bold('Journée actuelle :')} 0h")
             print(f"{bold('Semaine actuelle :')} 0h")
+            return
 
         exit_time_d, overtime_d = self.get_exit_hour(day_time)
         exit_time_w, overtime_w = self.get_exit_hour(week_time, 3600 * 7 * 5)
