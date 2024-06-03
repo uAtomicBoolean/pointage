@@ -33,9 +33,7 @@ class TimeCommand:
         print(
             f"{bold('Journée actuelle :')} {day_time} {faint(f'(sortie : {exit_time_d})')}"
         )
-        print(
-            f"{bold('Semaine actuelle :')} {week_time} {faint(f'(sortie : {exit_time_w})')}"
-        )
+        print(f"{bold('Semaine actuelle :')} {week_time}")
 
     def get_exit_hour(
         self, day_time: str, base_seconds: int = 25200
