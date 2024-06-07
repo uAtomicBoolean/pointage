@@ -33,7 +33,12 @@ class TimeCommand:
         print(
             f"{bold('Journée actuelle :')} {day_time} {faint(f'(sortie : {exit_time_d})')}"
         )
-        print(f"{bold('Semaine actuelle :')} {week_time}")
+
+        # Display the exit hour for the week's worked time only if we are friday.
+        exit_time = (
+            faint(f"(sortie : {exit_time_w})") if date.today().isoweekday() == 5 else ""
+        )
+        print(f"{bold('Semaine actuelle :')} {week_time} {exit_time}")
 
     def get_exit_hour(
         self, day_time: str, base_seconds: int = 25200
