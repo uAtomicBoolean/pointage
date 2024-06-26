@@ -6,7 +6,7 @@ from commands import *
 def main():
     parser = argparse.ArgumentParser(
         prog="pointage",
-        description="Plus besoin d'aller dans Odoo pour gérer notre pointage "
+        description="Plus besoin d'aller dans Odoo pour gérer votre pointage "
         "grâce à ce script dernière génération utilisant les plus grand "
         "modèles d'intelligence artificielles. "
         "Licence gratuite jusqu'au 31 décembre 2024 puis passage à une licence payante "

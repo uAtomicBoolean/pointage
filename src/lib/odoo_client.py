@@ -70,14 +70,22 @@ class OdooClient:
         return (att_id, now)
 
     def get_last_x_attendance(self, limit: int):
-        last_atts = self.execute(
+        return self.execute(
             "hr.attendance",
             "search_read",
             [[]],
             {"fields": ["name", "action"], "limit": limit},
         )
 
-        return last_atts
+    def get_day_attendance(self, day: datetime.date):
+        attendances = self.execute(
+            "hr.attendance",
+            "search_read",
+            [[]],
+            {"fields": ["name", "action"], "limit": 20},
+        )
+
+        return [att for att in attendances if day.__str__() == att["name"].split()[0]]
 
     def delete(self, id: int):
         return self.execute("hr.attendance", "unlink", [[id]])
