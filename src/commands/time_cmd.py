@@ -25,7 +25,7 @@ class TimeCommand:
             return
 
         exit_time_d, overtime_d = self.get_exit_hour(day_time)
-        exit_time_w, overtime_w = self.get_exit_hour(week_time, 3600 * 7 * 5)
+        exit_time_w, overtime_w = self.get_exit_hour(week_time, week=True)
 
         exit_time_d = exit_time_d if not overtime_d else f"{exit_time_d} {overtime_d}"
         exit_time_w = exit_time_w if not overtime_w else f"{exit_time_w} {overtime_w}"
@@ -33,20 +33,20 @@ class TimeCommand:
         print(
             f"{bold('Journée actuelle :')} {day_time} {faint(f'(sortie : {exit_time_d})')}"
         )
-
-        # Display the exit hour for the week's worked time only if we are friday.
-        exit_time = (
-            faint(f"(sortie : {exit_time_w})") if date.today().isoweekday() == 5 else ""
+        print(
+            f"{bold('Semaine actuelle :')} {week_time} {faint(f'(sortie : {exit_time_w})')}"
         )
-        print(f"{bold('Semaine actuelle :')} {week_time} {exit_time}")
 
-    def get_exit_hour(
-        self, day_time: str, base_seconds: int = 25200
-    ) -> Tuple[str, int]:
+    def get_exit_hour(self, worked_time: str, week: bool = False) -> Tuple[str, int]:
         """Return the hour at which the user finish + the current overtime."""
 
-        hours, minutes = day_time.split("h")
+        if not week:
+            hours, minutes = worked_time.split("h")
+        else:
+            hours, minutes = worked_time.split("h")
+            hours = int(hours) % 7
 
+        base_seconds = 25200
         worked_seconds = int(hours) * 3600 + int(minutes) * 60
 
         overtime = 0
