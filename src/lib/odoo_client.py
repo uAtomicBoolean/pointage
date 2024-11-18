@@ -1,7 +1,7 @@
 import datetime
 from xmlrpc.client import ServerProxy
 from .data_manager import DataManager
-from .time_functions import get_seasonal_offset, get_str_from_float_time
+from .time_functions import get_str_from_float_time, get_fixed_timestamp
 
 
 class OdooClient:
@@ -10,8 +10,6 @@ class OdooClient:
     ATT_ACTIONS = {"entree": "sign_in", "sortie": "sign_out"}
 
     def __init__(self):
-        self.season_offset = get_seasonal_offset(datetime.datetime.now())
-
         credentials = DataManager()
         self.username = credentials.get("id")
         self.pwd = credentials.get("pwd")
@@ -47,14 +45,14 @@ class OdooClient:
     def add_attendance(self, action: str, offset: int):
         """Creates a new attendance on Odoo and returns its ID."""
 
-        delta_offset = datetime.timedelta(minutes=offset)
-        now = datetime.datetime.now() + delta_offset
+        current_time = datetime.datetime.now() + datetime.timedelta(minutes=offset)
+        current_time_season_fixed = get_fixed_timestamp(current_time)
 
         # It looks like odoo doesn't care about the hour change per season.
         attendance_time = (
-            f"{now.strftime('%Y-%m-%d')} "
-            + f"{str(int(now.hour) - 2).zfill(1)}:"
-            + f"{now.strftime('%M:%S')}"
+            f"{current_time_season_fixed.strftime('%Y-%m-%d')} "
+            + f"{str(int(current_time_season_fixed.hour) - 2).zfill(1)}:"
+            + f"{current_time_season_fixed.strftime('%M:%S')}"
         )
 
         record_data = {
@@ -67,7 +65,7 @@ class OdooClient:
             att_id = self.execute("hr.attendance", "create", [record_data])
         except:
             att_id = -1
-        return (att_id, now)
+        return (att_id, current_time)
 
     def get_last_x_attendance(self, limit: int):
         return self.execute(

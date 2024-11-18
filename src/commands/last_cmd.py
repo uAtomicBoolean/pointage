@@ -29,7 +29,8 @@ class LastCommand:
             last_atts = self.odoo_client.get_last_x_attendance(args.limit)
 
         for att in last_atts:
-            att["name"] = get_fixed_timestamp(att["name"])
+            parsed_date = datetime.datetime.strptime(att["name"], "%Y-%m-%d %H:%M:%S")
+            att["name"] = get_fixed_timestamp(parsed_date)
             action_name = [
                 act
                 for act, o_act in OdooClient.ATT_ACTIONS.items()

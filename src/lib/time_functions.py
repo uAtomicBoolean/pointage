@@ -26,9 +26,9 @@ def get_seasonal_offset(now) -> int:
     return -1
 
 
-def get_fixed_timestamp(timestamp: str):
+def get_fixed_timestamp(current_time: datetime):
     offset = -get_seasonal_offset(datetime.now())
-    return date + timedelta(hours=offset)
+    return current_time + timedelta(hours=offset)
 
 
 def get_str_from_float_time(worked_hours: float) -> str:
