@@ -47,6 +47,8 @@ class TimeCommand:
             hours = int(hours) % 7
 
         base_seconds = 25200
+        hours = hours if hours else 0
+        minutes = minutes if minutes else 0
         worked_seconds = int(hours) * 3600 + int(minutes) * 60
 
         overtime = 0
