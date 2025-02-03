@@ -72,7 +72,7 @@ class OdooClient:
             "hr.attendance",
             "search_read",
             [[]],
-            {"fields": ["name", "action"], "limit": limit},
+            {"fields": ["check_in", "check_out"], "limit": limit // 2},
         )
 
     def get_day_attendance(self, day: datetime.date):
@@ -80,10 +80,12 @@ class OdooClient:
             "hr.attendance",
             "search_read",
             [[]],
-            {"fields": ["name", "action"], "limit": 20},
+            {"fields": ["check_in", "check_out"], "limit": 20},
         )
 
-        return [att for att in attendances if day.__str__() == att["name"].split()[0]]
+        return [
+            att for att in attendances if day.__str__() == att["check_in"].split()[0]
+        ]
 
     def delete(self, id: int):
         return self.execute("hr.attendance", "unlink", [[id]])

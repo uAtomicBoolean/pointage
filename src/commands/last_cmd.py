@@ -28,15 +28,21 @@ class LastCommand:
         else:
             last_atts = self.odoo_client.get_last_x_attendance(args.limit)
 
+        txt_entree = green("Entrée")
+        txt_sortie = red("Sortie")
+
         for att in last_atts:
-            parsed_date = datetime.datetime.strptime(att["name"], "%Y-%m-%d %H:%M:%S")
-            att["name"] = get_fixed_timestamp(parsed_date)
-            action_name = [
-                act
-                for act, o_act in OdooClient.ATT_ACTIONS.items()
-                if o_act == att["action"]
-            ][0]
-            action_name = (
-                green(action_name) if action_name == "entree" else red(action_name)
-            )
-            print(f"{action_name} à {att['name']}")
+            if "check_out" in att and att["check_out"]:
+                check_out = get_fixed_timestamp(
+                    datetime.datetime.strptime(att["check_out"], "%Y-%m-%d %H:%M:%S")
+                )
+                print(f"{txt_sortie} à {self.beautify_date(check_out)}")
+
+            if "check_in" in att and att["check_in"]:
+                check_in = get_fixed_timestamp(
+                    datetime.datetime.strptime(att["check_in"], "%Y-%m-%d %H:%M:%S")
+                )
+                print(f"{txt_entree} à {self.beautify_date(check_in)}")
+
+    def beautify_date(self, date: datetime.datetime):
+        return date.strftime("%H:%M:%S le %d/%m/%Y")
