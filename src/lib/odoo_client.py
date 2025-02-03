@@ -1,7 +1,7 @@
 import datetime
 from xmlrpc.client import ServerProxy
 from .data_manager import DataManager
-from .time_functions import get_str_from_float_time, get_fixed_timestamp
+from .time_functions import get_fixed_timestamp
 
 
 class OdooClient:
@@ -72,7 +72,7 @@ class OdooClient:
             "hr.attendance",
             "search_read",
             [[]],
-            {"fields": ["name", "action"], "limit": limit},
+            {"fields": ["check_in", "check_out"], "limit": limit // 2},
         )
 
     def get_day_attendance(self, day: datetime.date):
@@ -80,16 +80,53 @@ class OdooClient:
             "hr.attendance",
             "search_read",
             [[]],
-            {"fields": ["name", "action"], "limit": 20},
+            {"fields": ["check_in", "check_out"], "limit": 20},
         )
 
-        return [att for att in attendances if day.__str__() == att["name"].split()[0]]
+        return [
+            att for att in attendances if day.__str__() == att["check_in"].split()[0]
+        ]
 
     def delete(self, id: int):
         return self.execute("hr.attendance", "unlink", [[id]])
 
     def get_current_time(self):
-        week_time = self.execute(
+        curr_date = datetime.date.today()
+        first_week_day = curr_date - datetime.timedelta(days=curr_date.weekday())
+        last_week_day = first_week_day + datetime.timedelta(days=4)
+
+        first_week_day = first_week_day.strftime("%Y-%m-%d %H:%M:%S")
+        last_week_day = last_week_day.strftime("%Y-%m-%d %H:%M:%S")
+
+        attendances = self.execute(
+            "hr.attendance",
+            "search_read",
+            [
+                [
+                    ["check_in", ">=", first_week_day],
+                    "|",
+                    ["check_out", "<=", last_week_day],
+                    ["check_out", "=", False],
+                ]
+            ],
+            {"fields": ["check_in", "check_out"], "limit": 2},
+        )
+
+        for att in attendances:
+            if not att["check_in"]:
+                return []
+
+            att["check_in"] = get_fixed_timestamp(
+                datetime.datetime.strptime(att["check_in"], "%Y-%m-%d %H:%M:%S")
+            )
+            if att["check_out"]:
+                att["check_out"] = get_fixed_timestamp(
+                    datetime.datetime.strptime(att["check_out"], "%Y-%m-%d %H:%M:%S")
+                )
+
+        return attendances
+
+        """ week_time = self.execute(
             "hr_timesheet_sheet.sheet",
             "search_read",
             [[["employee_id", "=", self.employee_id]]],
@@ -107,28 +144,4 @@ class OdooClient:
         return (
             get_str_from_float_time(day_time["total_attendance"]),
             get_str_from_float_time(week_time["total_attendance"]),
-        )
-
-    def get_week_overtime(self) -> str:
-        week_id = self.execute(
-            "hr_timesheet_sheet.sheet",
-            "search_read",
-            [[["employee_id", "=", self.employee_id]]],
-            {"fields": ["id"], "order": "id desc", "limit": 1},
-        )[0]["id"]
-
-        days = self.execute(
-            "hr_timesheet_sheet.sheet.day",
-            "search_read",
-            [[["sheet_id", "=", week_id]]],
-            {
-                "fields": ["id", "total_attendance"],
-                "order": "name desc",
-            },
-        )
-
-        overtime = 0
-        for day in days:
-            if day["total_attendance"] > 7:
-                overtime += day["total_attendance"] - 7
-        return get_str_from_float_time(overtime)
+        ) """
