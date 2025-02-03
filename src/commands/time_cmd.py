@@ -1,4 +1,5 @@
-from datetime import date, datetime, timedelta
+import datetime
+
 from lib.colors import *
 from typing import Tuple
 from lib.odoo_client import OdooClient
@@ -17,47 +18,64 @@ class TimeCommand:
         self.cmd.set_defaults(execute=self.execute)
 
     def execute(self, _: Namespace):
-        day_time, week_time = self.odoo_client.get_current_time()
+        week_attendances = self.odoo_client.get_current_time()
 
-        if not day_time or not week_time:
-            print(f"{bold('Journée actuelle :')} 0h")
-            print(f"{bold('Semaine actuelle :')} 0h")
-            return
+        if not week_attendances:
+            return print(red("Pas de pointages pour la semaine."))
 
-        exit_time_d, overtime_d = self.get_exit_hour(day_time)
-        exit_time_w, overtime_w = self.get_exit_hour(week_time, week=True)
-
-        exit_time_d = exit_time_d if not overtime_d else f"{exit_time_d} {overtime_d}"
-        exit_time_w = exit_time_w if not overtime_w else f"{exit_time_w} {overtime_w}"
-
-        print(
-            f"{bold('Journée actuelle :')} {day_time} {faint(f'(sortie : {exit_time_d})')}"
-        )
-        print(
-            f"{bold('Semaine actuelle :')} {week_time} {faint(f'(sortie : {exit_time_w})')}"
+        curr_day = datetime.date.today().day
+        week_work_time = self.get_work_time(week_attendances)
+        day_work_time = self.get_work_time(
+            [a for a in week_attendances if a["check_in"].day == curr_day]
         )
 
-    def get_exit_hour(self, worked_time: str, week: bool = False) -> Tuple[str, int]:
-        """Return the hour at which the user finish + the current overtime."""
+        exit_hour_d, overtime_d = self.get_exit_hour(day_work_time)
+        exit_hour_w, overtime_w = self.get_exit_hour(week_work_time, True)
 
-        if not week:
-            hours, minutes = worked_time.split("h")
-        else:
-            hours, minutes = worked_time.split("h")
-            hours = int(hours) % 7
+        exit_hour_d = exit_hour_d if not overtime_d else f"{exit_hour_d} {overtime_d}"
+        exit_hour_w = exit_hour_w if not overtime_w else f"{exit_hour_w} {overtime_w}"
+
+        print(
+            bold("Journée actuelle :"),
+            self.beautify_work_time(day_work_time),
+            faint(f"(sortie : {exit_hour_d})"),
+        )
+        print(
+            bold("Semaine actuelle :"),
+            self.beautify_work_time(week_work_time),
+            faint(f"(sortie : {exit_hour_w})"),
+        )
+
+    def get_work_time(self, attendances: list[dict]) -> datetime:
+        """Returns the work time in seconds."""
+
+        total_time = datetime.timedelta(hours=0)
+        for att in attendances:
+            if not att["check_out"]:
+                att["check_out"] = datetime.datetime.now()
+
+            total_time += att["check_out"] - att["check_in"]
+
+        return total_time.days * 86400 + total_time.seconds
+
+    def beautify_work_time(self, work_time: int) -> str:
+        hours = f"{work_time // 3600}".zfill(2)
+        minutes = f"{(work_time % 3600) // 60}".zfill(2)
+        return f"{hours}h{minutes}"
+
+    def get_exit_hour(self, work_time: int, week: bool = False) -> str:
+        curr_day = datetime.date.today().weekday()
+
+        if week:
+            work_time = work_time - (3600 * 7 * curr_day)
 
         base_seconds = 25200
-        hours = hours if hours else 0
-        minutes = minutes if minutes else 0
-        worked_seconds = int(hours) * 3600 + int(minutes) * 60
-
         overtime = 0
-        if base_seconds < worked_seconds:
-            overtime = worked_seconds - base_seconds
-            worked_seconds = base_seconds
+        if base_seconds < work_time:
+            overtime = work_time - base_seconds
+            work_time = base_seconds
 
-        delta_seconds = base_seconds - worked_seconds
-        delta = timedelta(seconds=delta_seconds)
-        exit_time = datetime.now() + delta
+        remaining_time = datetime.timedelta(seconds=(3600 * 7) - work_time)
+        exit_time = datetime.datetime.now() + remaining_time
 
         return exit_time.strftime("%Hh%M"), convert_seconds_to_strtime(overtime)
