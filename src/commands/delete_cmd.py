@@ -16,13 +16,14 @@ class DeleteCommand:
         self.cmd.set_defaults(execute=self.execute)
 
     def execute(self, _: Namespace):
-        last_attendance = self.odoo_client.get_last_x_attendance(1)[0]
+        print(red("Commande dépréciée."))
+        # last_attendance = self.odoo_client.get_last_x_attendance(1)[0]
 
-        parsed_date = datetime.strptime(last_attendance["name"], "%Y-%m-%d %H:%M:%S")
-        date = get_fixed_timestamp(parsed_date)
-        choice = input(f"Voulez-vous supprimer le pointage du {date} (O/n) : ") or "n"
-        if choice == "O":
-            self.odoo_client.delete(last_attendance["id"])
-            print("Pointage supprimé.")
-        else:
-            print("Suppression annulée.")
+        # parsed_date = datetime.strptime(last_attendance["name"], "%Y-%m-%d %H:%M:%S")
+        # date = get_fixed_timestamp(parsed_date)
+        # choice = input(f"Voulez-vous supprimer le pointage du {date} (O/n) : ") or "n"
+        # if choice == "O":
+        #     self.odoo_client.delete(last_attendance["id"])
+        #     print("Pointage supprimé.")
+        # else:
+        #     print("Suppression annulée.")
