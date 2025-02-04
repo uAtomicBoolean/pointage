@@ -47,6 +47,16 @@ class OdooClient:
 
         return self.execute("hr.employee", "search", [[["user_id", "=", self.uid]]])[0]
 
+    def get_employee_attendance_state(self) -> str:
+        employee = self.execute(
+            "hr.employee",
+            "search_read",
+            [[("id", "=", self.employee_id)]],
+            {"fields": ["attendance_state"]},
+        )[0]
+
+        return employee["attendance_state"]
+
     def add_attendance(self, offset: int):
         """Creates a new attendance on Odoo and returns its ID."""
 
@@ -60,14 +70,7 @@ class OdooClient:
             + f"{current_time_season_fixed.strftime('%M:%S')}"
         )
 
-        employee = self.execute(
-            "hr.employee",
-            "search_read",
-            [[("id", "=", self.employee_id)]],
-            {"fields": ["attendance_state"]},
-        )[0]
-
-        if employee["attendance_state"] == "checked_in":
+        if self.get_employee_attendance_state() == "checked_in":
             attendance = self.execute(
                 "hr.attendance",
                 "search_read",
@@ -108,8 +111,12 @@ class OdooClient:
             att for att in attendances if day.__str__() == att["check_in"].split()[0]
         ]
 
-    def delete(self, id: int):
-        return self.execute("hr.attendance", "unlink", [[id]])
+    def delete_last(self, last_att_id: int, last_action: str):
+        self.execute(
+            "hr.attendance",
+            "write",
+            [[last_att_id], {last_action: False}],
+        )
 
     def get_week_attendances(self):
         curr_date = datetime.date.today()
