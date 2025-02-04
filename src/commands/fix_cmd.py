@@ -25,9 +25,16 @@ class FixCommand:
         attendance_time = convert_offset_to_odoo_datetime(args.offset)
         last_attendance = self.odoo_client.get_last_x_attendance(1)[0]
         last_action = "check_in" if not last_attendance["check_out"] else "check_out"
-        print(attendance_time)
 
-        choice = input(f"Voulez-vous modifier le dernier pointage (O/n) : ") or "n"
+        fixed_att_time = get_fixed_timestamp(parse_odoo_datetime(attendance_time))
+        fixed_att_time = fixed_att_time.strftime("%H:%M:%S")
+
+        choice = (
+            input(
+                f"Voulez-vous modifier le dernier pointage avec cette heure {fixed_att_time} (O/n) : "
+            )
+            or "n"
+        )
         if choice == "O":
             self.odoo_client.update_last(
                 last_attendance["id"], last_action, attendance_time
