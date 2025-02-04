@@ -1,7 +1,8 @@
 import datetime
-from xmlrpc.client import ServerProxy
+from xmlrpc.client import ServerProxy, Fault
+from .colors import red
 from .data_manager import DataManager
-from .time_functions import get_fixed_timestamp
+from .time_functions import get_fixed_timestamp, parse_odoo_datetime
 
 
 class OdooClient:
@@ -33,39 +34,59 @@ class OdooClient:
         return ServerProxy(f"{self.server_url}/object")
 
     def execute(self, model: str, function: str, *args):
-        return self.models.execute_kw(
-            self.db, self.uid, self.pwd, model, function, *args
-        )
+        try:
+            return self.models.execute_kw(
+                self.db, self.uid, self.pwd, model, function, *args
+            )
+        except Fault as err:
+            print(red(f"Erreur dans la communication XMLRPC (code {err.faultCode})"))
+            print(red(err.faultString))
 
     def get_user_employee_id(self) -> int:
         """Returns the ID of the employee linked to the user."""
 
         return self.execute("hr.employee", "search", [[["user_id", "=", self.uid]]])[0]
 
-    def add_attendance(self, action: str, offset: int):
+    def add_attendance(self, offset: int):
         """Creates a new attendance on Odoo and returns its ID."""
 
         current_time = datetime.datetime.now() + datetime.timedelta(minutes=offset)
         current_time_season_fixed = get_fixed_timestamp(current_time)
 
-        # It looks like odoo doesn't care about the hour change per season.
+        # Odoo doesn't care about the hour change per season.
         attendance_time = (
             f"{current_time_season_fixed.strftime('%Y-%m-%d')} "
             + f"{str(int(current_time_season_fixed.hour) - 2).zfill(1)}:"
             + f"{current_time_season_fixed.strftime('%M:%S')}"
         )
 
-        record_data = {
-            "employee_id": self.employee_id,
-            "name": attendance_time,
-            "action": OdooClient.ATT_ACTIONS[action],
-        }
+        employee = self.execute(
+            "hr.employee",
+            "search_read",
+            [[("id", "=", self.employee_id)]],
+            {"fields": ["attendance_state"]},
+        )[0]
 
-        try:
-            att_id = self.execute("hr.attendance", "create", [record_data])
-        except:
-            att_id = -1
-        return (att_id, current_time)
+        if employee["attendance_state"] == "checked_in":
+            attendance = self.execute(
+                "hr.attendance",
+                "search_read",
+                [[("employee_id", "=", self.employee_id), ("check_out", "=", False)]],
+                {"limit": 1},
+            )[0]
+            self.execute(
+                "hr.attendance",
+                "write",
+                [[attendance["id"]], {"check_out": attendance_time}],
+            )
+            return "Sortie", attendance_time
+
+        self.execute(
+            "hr.attendance",
+            "create",
+            [{"employee_id": self.employee_id, "check_in": attendance_time}],
+        )
+        return "Entrée", attendance_time
 
     def get_last_x_attendance(self, limit: int):
         return self.execute(
@@ -106,12 +127,10 @@ class OdooClient:
             if not att["check_in"]:
                 return []
 
-            att["check_in"] = get_fixed_timestamp(
-                datetime.datetime.strptime(att["check_in"], "%Y-%m-%d %H:%M:%S")
-            )
+            att["check_in"] = get_fixed_timestamp(parse_odoo_datetime(att["check_in"]))
             if att["check_out"]:
                 att["check_out"] = get_fixed_timestamp(
-                    datetime.datetime.strptime(att["check_out"], "%Y-%m-%d %H:%M:%S")
+                    parse_odoo_datetime(att["check_out"])
                 )
 
         return attendances

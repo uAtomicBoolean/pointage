@@ -26,6 +26,10 @@ def get_seasonal_offset(now) -> int:
     return -1
 
 
+def parse_odoo_datetime(date: str) -> datetime:
+    return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+
+
 def get_fixed_timestamp(current_time: datetime):
     offset = -get_seasonal_offset(datetime.now())
     return current_time + timedelta(hours=offset)

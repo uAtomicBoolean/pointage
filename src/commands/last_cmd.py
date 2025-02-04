@@ -1,7 +1,7 @@
 import datetime
 from lib.colors import *
 from lib.odoo_client import OdooClient
-from lib.time_functions import get_fixed_timestamp
+from lib.time_functions import get_fixed_timestamp, parse_odoo_datetime
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 
@@ -33,15 +33,11 @@ class LastCommand:
 
         for att in last_atts:
             if "check_out" in att and att["check_out"]:
-                check_out = get_fixed_timestamp(
-                    datetime.datetime.strptime(att["check_out"], "%Y-%m-%d %H:%M:%S")
-                )
+                check_out = get_fixed_timestamp(parse_odoo_datetime(att["check_out"]))
                 print(f"{txt_sortie} à {self.beautify_date(check_out)}")
 
             if "check_in" in att and att["check_in"]:
-                check_in = get_fixed_timestamp(
-                    datetime.datetime.strptime(att["check_in"], "%Y-%m-%d %H:%M:%S")
-                )
+                check_in = get_fixed_timestamp(parse_odoo_datetime(att["check_in"]))
                 print(f"{txt_entree} à {self.beautify_date(check_in)}")
 
     def beautify_date(self, date: datetime.datetime):

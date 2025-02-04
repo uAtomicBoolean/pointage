@@ -20,7 +20,7 @@ def main():
     TimeCommand(odoo_client, subparsers)
     LastCommand(odoo_client, subparsers)
     UpdateCommand(odoo_client, subparsers)
-    PresenceCommand(odoo_client, subparsers)
+    PointeCommand(odoo_client, subparsers)
 
     args = parser.parse_args()
     args.execute(args)
