@@ -90,26 +90,16 @@ class OdooClient:
     def delete(self, id: int):
         return self.execute("hr.attendance", "unlink", [[id]])
 
-    def get_current_time(self):
+    def get_week_attendances(self):
         curr_date = datetime.date.today()
         first_week_day = curr_date - datetime.timedelta(days=curr_date.weekday())
-        last_week_day = first_week_day + datetime.timedelta(days=4)
-
         first_week_day = first_week_day.strftime("%Y-%m-%d %H:%M:%S")
-        last_week_day = last_week_day.strftime("%Y-%m-%d %H:%M:%S")
 
         attendances = self.execute(
             "hr.attendance",
             "search_read",
-            [
-                [
-                    ["check_in", ">=", first_week_day],
-                    "|",
-                    ["check_out", "<=", last_week_day],
-                    ["check_out", "=", False],
-                ]
-            ],
-            {"fields": ["check_in", "check_out"], "limit": 2},
+            [[["check_in", ">=", first_week_day]]],
+            {"fields": ["check_in", "check_out"], "limit": 50},
         )
 
         for att in attendances:
@@ -125,23 +115,3 @@ class OdooClient:
                 )
 
         return attendances
-
-        """ week_time = self.execute(
-            "hr_timesheet_sheet.sheet",
-            "search_read",
-            [[["employee_id", "=", self.employee_id]]],
-            {"fields": ["id", "total_attendance"], "order": "id desc", "limit": 1},
-        )[0]
-
-        # TODO Gerer l'erreur quand aucune attendance n'a ete creee.
-        day_time = self.execute(
-            "hr_timesheet_sheet.sheet.day",
-            "search_read",
-            [[["sheet_id", "=", week_time["id"]]]],
-            {"fields": ["id", "total_attendance"], "order": "name desc", "limit": 1},
-        )[0]
-
-        return (
-            get_str_from_float_time(day_time["total_attendance"]),
-            get_str_from_float_time(week_time["total_attendance"]),
-        ) """

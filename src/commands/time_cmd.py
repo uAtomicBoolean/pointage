@@ -18,7 +18,7 @@ class TimeCommand:
         self.cmd.set_defaults(execute=self.execute)
 
     def execute(self, _: Namespace):
-        week_attendances = self.odoo_client.get_current_time()
+        week_attendances = self.odoo_client.get_week_attendances()
 
         if not week_attendances:
             return print(red("Pas de pointages pour la semaine."))
