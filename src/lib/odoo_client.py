@@ -41,6 +41,7 @@ class OdooClient:
         except Fault as err:
             print(red(f"Erreur dans la communication XMLRPC (code {err.faultCode})"))
             print(red(err.faultString))
+            exit(1)
 
     def get_user_employee_id(self) -> int:
         """Returns the ID of the employee linked to the user."""
@@ -57,18 +58,8 @@ class OdooClient:
 
         return employee["attendance_state"]
 
-    def add_attendance(self, offset: int):
+    def add_attendance(self, attendance_time: datetime.datetime):
         """Creates a new attendance on Odoo and returns its ID."""
-
-        current_time = datetime.datetime.now() + datetime.timedelta(minutes=offset)
-        current_time_season_fixed = get_fixed_timestamp(current_time)
-
-        # Odoo doesn't care about the hour change per season.
-        attendance_time = (
-            f"{current_time_season_fixed.strftime('%Y-%m-%d')} "
-            + f"{str(int(current_time_season_fixed.hour) - 2).zfill(1)}:"
-            + f"{current_time_season_fixed.strftime('%M:%S')}"
-        )
 
         if self.get_employee_attendance_state() == "checked_in":
             attendance = self.execute(
@@ -111,11 +102,13 @@ class OdooClient:
             att for att in attendances if day.__str__() == att["check_in"].split()[0]
         ]
 
-    def delete_last(self, last_att_id: int, last_action: str):
+    def update_last(
+        self, last_att_id: int, last_action: str, attendance_time: datetime.datetime
+    ):
         self.execute(
             "hr.attendance",
             "write",
-            [[last_att_id], {last_action: False}],
+            [[last_att_id], {last_action: attendance_time}],
         )
 
     def get_week_attendances(self):

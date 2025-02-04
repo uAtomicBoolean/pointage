@@ -21,7 +21,7 @@ def main():
     LastCommand(odoo_client, subparsers)
     UpdateCommand(odoo_client, subparsers)
     PointeCommand(odoo_client, subparsers)
-    DeleteCommand(odoo_client, subparsers)
+    FixCommand(odoo_client, subparsers)
 
     args = parser.parse_args()
     args.execute(args)

@@ -1,0 +1,37 @@
+from lib.colors import *
+from lib.odoo_client import OdooClient
+from lib.time_functions import *
+from argparse import _SubParsersAction, ArgumentParser, Namespace
+
+
+class FixCommand:
+
+    def __init__(self, odoo_client: OdooClient, subparsers: _SubParsersAction):
+        self.odoo_client = odoo_client
+
+        self.cmd: ArgumentParser = subparsers.add_parser(
+            "fix", help="Modifie le dernier pointage."
+        )
+        self.cmd.set_defaults(execute=self.execute)
+        self.cmd.add_argument(
+            "offset",
+            help="Soit un offset, soit une heure (ex: 12h30, 12H30, 12:30)",
+            type=str,
+            default="0",
+            nargs="?",
+        )
+
+    def execute(self, args: Namespace):
+        attendance_time = convert_offset_to_odoo_datetime(args.offset)
+        last_attendance = self.odoo_client.get_last_x_attendance(1)[0]
+        last_action = "check_in" if not last_attendance["check_out"] else "check_out"
+        print(attendance_time)
+
+        choice = input(f"Voulez-vous modifier le dernier pointage (O/n) : ") or "n"
+        if choice == "O":
+            self.odoo_client.update_last(
+                last_attendance["id"], last_action, attendance_time
+            )
+            print(green("Pointage modifié."))
+        else:
+            print(red("Modification annulée."))

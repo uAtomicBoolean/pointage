@@ -1,7 +1,6 @@
 import datetime
 
 from lib.colors import *
-from typing import Tuple
 from lib.odoo_client import OdooClient
 from lib.time_functions import convert_seconds_to_strtime
 from argparse import _SubParsersAction, ArgumentParser, Namespace

@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from .colors import red
 
 
 def get_seasonal_offset(now) -> int:
@@ -24,6 +25,33 @@ def get_seasonal_offset(now) -> int:
     ):
         return -2
     return -1
+
+
+def convert_offset_to_odoo_datetime(offset: int) -> int:
+    try:
+        offset = int(offset)
+    except ValueError:
+        try:
+            raw_hour = offset.lower().replace("h", ":")
+            hour = datetime.strptime(raw_hour, "%H:%M")
+            full_date = datetime.combine(date.today(), hour.time())
+
+            # Convert the fulldate to an integer offset.
+            time_diff = full_date - datetime.now()
+            offset = int(time_diff.total_seconds() // 60)
+        except:
+            print(red("Erreur dans le formatage de l'heure (ex: 12H30, 12h30, 12:30)."))
+            exit(1)
+
+    current_time = datetime.now() + timedelta(minutes=offset)
+    current_time_season_fixed = get_fixed_timestamp(current_time)
+
+    # Odoo doesn't care about the hour change per season.
+    return (
+        f"{current_time_season_fixed.strftime('%Y-%m-%d')} "
+        + f"{str(int(current_time_season_fixed.hour) - 2).zfill(1)}:"
+        + f"{current_time_season_fixed.strftime('%M:%S')}"
+    )
 
 
 def parse_odoo_datetime(date: str) -> datetime:
