@@ -49,7 +49,7 @@ def convert_offset_to_odoo_datetime(offset: int) -> int:
     # Odoo doesn't care about the hour change per season.
     return (
         f"{current_time_season_fixed.strftime('%Y-%m-%d')} "
-        + f"{str(int(current_time_season_fixed.hour) - 2).zfill(1)}:"
+        + f"{str(int(current_time_season_fixed.hour) - 2).zfill(2)}:"
         + f"{current_time_season_fixed.strftime('%M:%S')}"
     )
 
