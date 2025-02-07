@@ -11,7 +11,7 @@ class PointeCommand:
         self.odoo_client = odoo_client
 
         self.cmd: ArgumentParser = subparsers.add_parser(
-            "pointe", help="Réalise un pointage."
+            "pointe", help="Réalise un pointage.", aliases=["entree", "sortie"]
         )
         self.cmd.set_defaults(execute=self.execute)
         self.cmd.add_argument(
