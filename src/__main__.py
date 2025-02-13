@@ -38,6 +38,7 @@ def main():
 
     # TODO Check if any update is available.
     # If yes, then ask the users if he wants to update.
+    # URL To get latest release information's : https://api.github.com/repos/uAtomicBoolean/pointage/releases/latest
 
 
 if __name__ == "__main__":
