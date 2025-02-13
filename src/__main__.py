@@ -14,6 +14,7 @@ def main():
         "Licence gratuite jusqu'au 31 décembre 2024 puis passage à une licence payante "
         "renouvelable annuellement à un prix de 9 999€ au 1er janvier 2025.",
     )
+    parser.set_defaults(execute=lambda _: parser.print_help())
     parser.add_argument(
         "--version", help="Affiche la version du script.", action="store_true"
     )
@@ -33,7 +34,10 @@ def main():
     if args.version:
         return print(f"pointage v{VERSION}")
 
-    parser.print_help()
+    args.execute(args)
+
+    # TODO Check if any update is available.
+    # If yes, then ask the users if he wants to update.
 
 
 if __name__ == "__main__":

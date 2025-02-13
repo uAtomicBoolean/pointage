@@ -24,6 +24,8 @@ class UpdateCommand:
         self.cmd.set_defaults(execute=self.execute)
 
     def execute(self, _: Namespace):
+        # TODO Update the command to download the latest release instead of building the script.
+
         zip_file_url = (
             "https://github.com/uAtomicBoolean/pointage/archive/refs/heads/main.zip"
         )
