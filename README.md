@@ -1,5 +1,4 @@
 # pointage-odoo
-**EN COURS DE MISE A JOUR.**  
 Petit script pour pointer sur Odoo 15 depuis le terminal.  
 
 Utilisez le script `./build_script.sh` pour générer un exécutable pour linux/macos. Il ne requiert aucune dépendance externe mais nécessite une version minimum de Python 3.8.
