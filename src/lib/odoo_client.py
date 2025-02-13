@@ -91,25 +91,26 @@ class OdooClient:
         )
 
     def get_day_attendance(self, day: datetime.date):
+        dt = datetime.datetime.date(datetime.datetime.now())
+        day_start = datetime.datetime.combine(dt, datetime.datetime.min.time())
+        day_end = datetime.datetime.combine(dt, datetime.datetime.max.time())
         attendances = self.execute(
             "hr.attendance",
             "search_read",
-            [[]],
-            {"fields": ["check_in", "check_out"], "limit": 20},
+            [
+                [
+                    ("check_in", ">=", day_start),
+                    "|",
+                    ("check_out", "<=", day_end),
+                    ("check_out", "=", False),
+                ]
+            ],
+            {"fields": ["check_in", "check_out"]},
         )
 
         return [
             att for att in attendances if day.__str__() == att["check_in"].split()[0]
         ]
-
-    def update_last(
-        self, last_att_id: int, last_action: str, attendance_time: datetime.datetime
-    ):
-        self.execute(
-            "hr.attendance",
-            "write",
-            [[last_att_id], {last_action: attendance_time}],
-        )
 
     def get_week_attendances(self):
         curr_date = datetime.date.today()
@@ -134,3 +135,12 @@ class OdooClient:
                 )
 
         return attendances
+
+    def update_last(
+        self, last_att_id: int, last_action: str, attendance_time: datetime.datetime
+    ):
+        self.execute(
+            "hr.attendance",
+            "write",
+            [[last_att_id], {last_action: attendance_time}],
+        )
