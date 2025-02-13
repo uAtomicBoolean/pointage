@@ -22,11 +22,8 @@ jobs:
       run: |
         python -m zipapp src -o pointage -p "/usr/bin/python3" -c
 
-    - name: list files
-      run: ls -lR ${{ github.workspace }}
-
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
         name: pointage ${{ github.ref_name }}
-        file: pointage
+        file: ${{ github.workspace }}/pointage
