@@ -1,0 +1,29 @@
+name: Create Release
+run-name: Build the script and create a new release.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Build executable
+      run: |
+        python -m zipapp src -o pointage -p "/usr/bin/python3" -c
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: pointage ${{ github.ref_name }}
+        file: pointage
