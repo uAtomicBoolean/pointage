@@ -9,8 +9,14 @@ from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 class UpdateCommand:
 
-    def __init__(self, odoo_client: OdooClient, subparsers: _SubParsersAction):
+    def __init__(
+        self,
+        odoo_client: OdooClient,
+        subparsers: _SubParsersAction,
+        version: str,
+    ):
         self.odoo_client = odoo_client
+        self.version = version
 
         self.cmd: ArgumentParser = subparsers.add_parser(
             "update", help="Met à jour le script automatiquement."
