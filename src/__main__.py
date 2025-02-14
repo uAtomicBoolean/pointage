@@ -1,8 +1,9 @@
 import argparse
-from lib.odoo_client import OdooClient
 from commands import *
+from lib import update
+from lib.odoo_client import OdooClient
 
-VERSION = "1.0.0"
+VERSION = "v0.0.0"
 
 
 def main():
@@ -25,7 +26,6 @@ def main():
 
     TimeCommand(odoo_client, subparsers)
     LastCommand(odoo_client, subparsers)
-    UpdateCommand(odoo_client, subparsers, VERSION)
     PointeCommand(odoo_client, subparsers)
     FixCommand(odoo_client, subparsers)
 
@@ -36,9 +36,8 @@ def main():
 
     args.execute(args)
 
-    # TODO Check if any update is available.
-    # If yes, then ask the users if he wants to update.
-    # URL To get latest release information's : https://api.github.com/repos/uAtomicBoolean/pointage/releases/latest
+    # Checking of updates.
+    update.update_script(VERSION)
 
 
 if __name__ == "__main__":
