@@ -1,9 +1,8 @@
 import argparse
 from commands import *
-from lib import update
 from lib.odoo_client import OdooClient
 
-VERSION = "v0.0.0"
+VERSION = "v1.0.1"
 
 
 def main():
@@ -28,6 +27,7 @@ def main():
     LastCommand(odoo_client, subparsers)
     PointeCommand(odoo_client, subparsers)
     FixCommand(odoo_client, subparsers)
+    UpdateCommand(odoo_client, subparsers, VERSION)
 
     args = parser.parse_args()
 
@@ -35,9 +35,6 @@ def main():
         return print(f"pointage v{VERSION}")
 
     args.execute(args)
-
-    # Checking of updates.
-    update.update_script(VERSION)
 
 
 if __name__ == "__main__":
