@@ -36,6 +36,7 @@ class UpdateCommand:
         online_version, download_url = self.get_online_version_data()
 
         if online_version == self.VERSION:
+            print(f"Script pointage déjà à jour ({self.VERSION})")
             return
 
         confirmation = input(
