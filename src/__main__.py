@@ -32,7 +32,7 @@ def main():
     args = parser.parse_args()
 
     if args.version:
-        return print(f"pointage v{VERSION}")
+        return print(f"pointage {VERSION}")
 
     args.execute(args)
 
