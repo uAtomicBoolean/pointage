@@ -6,7 +6,6 @@ from lib.time_functions import *
 
 
 class PointeCommand:
-
     def __init__(self, odoo_client: OdooClient, subparsers: _SubParsersAction):
         self.odoo_client = odoo_client
 

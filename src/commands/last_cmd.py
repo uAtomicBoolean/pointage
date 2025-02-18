@@ -6,7 +6,6 @@ from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 
 class LastCommand:
-
     def __init__(self, odoo_client: OdooClient, subparsers: _SubParsersAction):
         self.odoo_client = odoo_client
 

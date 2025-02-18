@@ -2,7 +2,7 @@ import argparse
 from commands import *
 from lib.odoo_client import OdooClient
 
-VERSION = "v1.0.3"
+VERSION = "v1.1.0"
 
 
 def main():
@@ -25,6 +25,7 @@ def main():
 
     TimeCommand(odoo_client, subparsers)
     LastCommand(odoo_client, subparsers)
+    ResumeCommand(odoo_client, subparsers)
     PointeCommand(odoo_client, subparsers)
     FixCommand(odoo_client, subparsers)
     UpdateCommand(odoo_client, subparsers, VERSION)

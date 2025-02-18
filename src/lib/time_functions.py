@@ -71,3 +71,9 @@ def convert_seconds_to_strtime(seconds: int):
         else:
             return f"+{minutes // 60}h{minutes % 60}"
     return ""
+
+
+def get_week_first_day():
+    curr_date = date.today()
+    first_week_day = curr_date - datetime.timedelta(days=curr_date.weekday())
+    return first_week_day.strftime("%Y-%m-%d %H:%M:%S")
