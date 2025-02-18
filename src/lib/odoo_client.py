@@ -1,8 +1,10 @@
-import datetime
-from xmlrpc.client import ServerProxy, Fault
 from .colors import red
 from .data_manager import DataManager
 from .time_functions import get_fixed_timestamp, parse_odoo_datetime, get_week_first_day
+
+import datetime
+import dateutil.utils
+from xmlrpc.client import ServerProxy, Fault
 
 
 class OdooClient:
@@ -91,9 +93,8 @@ class OdooClient:
         )
 
     def get_day_attendance(self, day: datetime.date):
-        dt = datetime.datetime.date(datetime.datetime.now())
-        day_start = datetime.datetime.combine(dt, datetime.datetime.min.time())
-        day_end = datetime.datetime.combine(dt, datetime.datetime.max.time())
+        day_start = dateutil.utils.today()
+        day_end = datetime.datetime.combine(day_start, datetime.datetime.max.time())
         attendances = self.execute(
             "hr.attendance",
             "search_read",
@@ -114,6 +115,7 @@ class OdooClient:
 
     def get_week_attendances(self):
         first_week_day = get_week_first_day()
+        first_week_day = first_week_day.strftime("%Y-%m-%d %H:%M:%S")
 
         attendances = self.execute(
             "hr.attendance",
@@ -131,6 +133,8 @@ class OdooClient:
                 att["check_out"] = get_fixed_timestamp(
                     parse_odoo_datetime(att["check_out"])
                 )
+            else:
+                att["check_out"] = datetime.datetime.now()
 
         return attendances
 

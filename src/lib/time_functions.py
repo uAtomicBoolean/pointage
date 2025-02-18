@@ -75,5 +75,20 @@ def convert_seconds_to_strtime(seconds: int):
 
 def get_week_first_day():
     curr_date = date.today()
-    first_week_day = curr_date - datetime.timedelta(days=curr_date.weekday())
-    return first_week_day.strftime("%Y-%m-%d %H:%M:%S")
+    return curr_date - timedelta(days=curr_date.weekday())
+
+
+def get_work_time(attendances: list[dict]) -> datetime:
+    """Returns the work time in seconds."""
+
+    total_time = timedelta(hours=0)
+    for att in attendances:
+        total_time += att["check_out"] - att["check_in"]
+
+    return total_time.days * 86400 + total_time.seconds
+
+
+def beautify_work_time(work_time: int) -> str:
+    hours = f"{work_time // 3600}".zfill(2)
+    minutes = f"{(work_time % 3600) // 60}".zfill(2)
+    return f"{hours}h{minutes}"
