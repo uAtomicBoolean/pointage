@@ -35,12 +35,12 @@ class TimeCommand:
 
         print(
             bold("Journée actuelle :"),
-            self.beautify_work_time(day_work_time),
+            time_functions.beautify_work_time(day_work_time),
             faint(f"(sortie : {exit_hour_d})"),
         )
         print(
             bold("Semaine actuelle :"),
-            self.beautify_work_time(week_work_time),
+            time_functions.beautify_work_time(week_work_time),
             faint(f"(sortie : {exit_hour_w})"),
         )
 

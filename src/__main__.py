@@ -2,7 +2,7 @@ import argparse
 from commands import *
 from lib.odoo_client import OdooClient
 
-VERSION = "v1.1.0"
+VERSION = "v1.1.1"
 
 
 def main():
