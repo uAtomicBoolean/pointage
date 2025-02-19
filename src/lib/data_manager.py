@@ -30,6 +30,10 @@ class DataManager:
         with open(self.config_file_path, "rb") as file:
             data = pickle.load(file)
 
+        if os.environ.get("ENV") == "dev":
+            data["server_url"] = os.environ.get("SERVER_URL")
+
+        print(data)
         return data
 
     def build_data_file(self):
@@ -47,7 +51,6 @@ class DataManager:
             "pwd": pwd,
             "server_url": server_url,
             "db": db,
-            "bin_path": "~/bin",
         }
 
         with open(self.config_file_path, "wb") as file:

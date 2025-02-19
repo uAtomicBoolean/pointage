@@ -1,10 +1,11 @@
-from .colors import red
-from .data_manager import DataManager
-from .time_functions import get_fixed_timestamp, parse_odoo_datetime, get_week_first_day
-
+import os
 import datetime
 import dateutil.utils
 from xmlrpc.client import ServerProxy, Fault
+
+from .colors import red
+from .data_manager import DataManager
+from .time_functions import get_fixed_timestamp, parse_odoo_datetime, get_week_first_day
 
 
 class OdooClient:
@@ -20,9 +21,13 @@ class OdooClient:
         self.db = credentials.get("db")
 
         self.models = self.get_models_server()
-
         self.uid = self.get_uid()
         self.employee_id = self.get_user_employee_id()
+
+    def get_models_server(self) -> ServerProxy:
+        """Returns the ServerProxy used to interact with Odoo's records."""
+
+        return ServerProxy(f"{self.server_url}/object")
 
     def get_uid(self) -> int:
         """Get the user's ID from Odoo."""
@@ -30,10 +35,10 @@ class OdooClient:
         common = ServerProxy(f"{self.server_url}/common")
         return common.authenticate(self.db, self.username, self.pwd, {})
 
-    def get_models_server(self) -> ServerProxy:
-        """Returns the ServerProxy used to interact with Odoo's records."""
+    def get_user_employee_id(self) -> int:
+        """Returns the ID of the employee linked to the user."""
 
-        return ServerProxy(f"{self.server_url}/object")
+        return self.execute("hr.employee", "search", [[["user_id", "=", self.uid]]])[0]
 
     def execute(self, model: str, function: str, *args):
         try:
@@ -44,11 +49,6 @@ class OdooClient:
             print(red(f"Erreur dans la communication XMLRPC (code {err.faultCode})"))
             print(red(err.faultString))
             exit(1)
-
-    def get_user_employee_id(self) -> int:
-        """Returns the ID of the employee linked to the user."""
-
-        return self.execute("hr.employee", "search", [[["user_id", "=", self.uid]]])[0]
 
     def get_employee_attendance_state(self) -> str:
         employee = self.execute(
