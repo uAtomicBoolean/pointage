@@ -33,7 +33,6 @@ class DataManager:
         if os.environ.get("ENV") == "dev":
             data["server_url"] = os.environ.get("SERVER_URL")
 
-        print(data)
         return data
 
     def build_data_file(self):
