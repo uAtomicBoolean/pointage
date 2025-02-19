@@ -23,11 +23,12 @@ def main():
 
     odoo_client = OdooClient()
 
-    TimeCommand(odoo_client, subparsers)
-    LastCommand(odoo_client, subparsers)
-    ResumeCommand(odoo_client, subparsers)
-    PointeCommand(odoo_client, subparsers)
     FixCommand(odoo_client, subparsers)
+    LastCommand(odoo_client, subparsers)
+    PointeCommand(odoo_client, subparsers)
+    ResumeCommand(odoo_client, subparsers)
+    TimeCommand(odoo_client, subparsers)
+    TimesheetCommand(odoo_client, subparsers)
     UpdateCommand(odoo_client, subparsers, VERSION)
 
     args = parser.parse_args()
