@@ -1,6 +1,4 @@
-import os
 import datetime
-import dateutil.utils
 from xmlrpc.client import ServerProxy, Fault
 
 from .colors import red
@@ -93,7 +91,10 @@ class OdooClient:
         )
 
     def get_day_attendance(self, day: datetime.date):
-        day_start = dateutil.utils.today()
+        day_start = datetime.datetime.combine(
+            datetime.date.today(),
+            datetime.datetime.min.time(),
+        )
         day_end = datetime.datetime.combine(day_start, datetime.datetime.max.time())
         attendances = self.execute(
             "hr.attendance",
