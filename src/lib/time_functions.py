@@ -23,8 +23,8 @@ def get_seasonal_offset(now) -> int:
         "spring",
         "summer",
     ):
-        return -2
-    return -1
+        return 0
+    return 1
 
 
 def convert_offset_to_odoo_datetime(offset: int) -> int:
@@ -47,6 +47,7 @@ def convert_offset_to_odoo_datetime(offset: int) -> int:
     current_time_season_fixed = get_fixed_timestamp(current_time)
 
     # Odoo doesn't care about the hour change per season.
+    # Odoo use UTC instead of UTC+2 hence the -2 is mandatory.
     return (
         f"{current_time_season_fixed.strftime('%Y-%m-%d')} "
         + f"{str(int(current_time_season_fixed.hour) - 2).zfill(2)}:"
@@ -55,11 +56,13 @@ def convert_offset_to_odoo_datetime(offset: int) -> int:
 
 
 def parse_odoo_datetime(date: str) -> datetime:
-    return datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+    if get_seasonal_offset(datetime.now()) == 1:
+        return datetime.strptime(date, "%Y-%m-%d %H:%M:%S") + timedelta(hours=1)
+    return datetime.strptime(date, "%Y-%m-%d %H:%M:%S") + timedelta(hours=2)
 
 
 def get_fixed_timestamp(current_time: datetime):
-    offset = -get_seasonal_offset(datetime.now())
+    offset = get_seasonal_offset(datetime.now())
     return current_time + timedelta(hours=offset)
 
 
