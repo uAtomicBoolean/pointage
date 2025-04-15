@@ -23,11 +23,12 @@ class ResumeCommand:
         french_days = ["Lun", "Mar", "Mer", "Jeu", "Ven"]
         worked_days = []
         for k in range(5):
-            curr_day_data = {"name": french_days[k], "worked_time": ""}
+            curr_day_data = {"name": french_days[k], "worked_time": "", "s_worked_time": 0}
             current_day = first_day + datetime.timedelta(days=k)
             day_work_time = time_functions.get_work_time(
                 [a for a in raw_attendances if a["check_in"].day == current_day.day]
             )
+            curr_day_data["s_worked_time"] = day_work_time
             curr_day_data["worked_time"] = (
                 time_functions.beautify_work_time(day_work_time)
                 if day_work_time
@@ -40,8 +41,10 @@ class ResumeCommand:
             print(f"  {day['name']}  |", end="")
         print("\n+-------+-------+-------+-------+-------+\n|", end="")
         for day in worked_days:
-            print(
-                f" {day['worked_time']} |" if day["worked_time"] else "       |",
-                end="",
-            )
+            if not day["worked_time"]:
+                print("       |", end="")
+            elif day["s_worked_time"] > 25200:
+                print(f" {day['worked_time']} |", end="")
+            else:
+                print(f" {red(day['worked_time'])} |", end="")
         print("\n+-------+-------+-------+-------+-------+")
