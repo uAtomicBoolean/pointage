@@ -1,8 +1,9 @@
 import datetime
-from lib.colors import *
+from argparse import ArgumentParser, Namespace, _SubParsersAction
+
+from lib.colors import green, red
 from lib.odoo_client import OdooClient
 from lib.time_functions import get_fixed_timestamp, parse_odoo_datetime
-from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 
 class LastCommand:

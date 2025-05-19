@@ -1,9 +1,9 @@
 import datetime
-from xmlrpc.client import ServerProxy, Fault
+from xmlrpc.client import Fault, ServerProxy
 
 from .colors import red
 from .data_manager import DataManager
-from .time_functions import get_fixed_timestamp, parse_odoo_datetime, get_week_first_day
+from .time_functions import get_fixed_timestamp, get_week_first_day, parse_odoo_datetime
 
 
 class OdooClient:
@@ -138,6 +138,54 @@ class OdooClient:
                 att["check_out"] = datetime.datetime.now()
 
         return attendances
+
+    def get_holidays_as_attendance(self):
+        first_week_day = get_week_first_day()
+        current_date = datetime.date.today()
+
+        user_company_id = self.execute(
+            "res.users",
+            "search_read",
+            [[["id", "=", self.uid]]],
+            {"fields": ["company_id"]},
+        )[0]
+
+        leave_task_id = self.execute(
+            "res.company",
+            "search_read",
+            [[["id", "=", user_company_id["company_id"][0]]]],
+            {"fields": ["leave_timesheet_task_id"]},
+        )
+        if not len(leave_task_id) or not leave_task_id[0]["leave_timesheet_task_id"]:
+            return []
+
+        acc_line = self.execute(
+            "account.analytic.line",
+            "search_read",
+            [
+                [
+                    ["date", ">=", first_week_day.strftime("%d/%m/%Y")],
+                    ["date", "<=", current_date.strftime("%d/%m/%Y")],
+                    ["user_id", "=", self.uid],
+                    ["task_id", "=", leave_task_id[0]["leave_timesheet_task_id"][0]],
+                ]
+            ],
+            {"fields": ["unit_amount"]},
+        )
+
+        start_datetime = datetime.datetime.combine(
+            first_week_day, datetime.datetime.min.time()
+        )
+        end_datetime = start_datetime
+
+        for al in acc_line:
+            delta = datetime.timedelta(hours=al["unit_amount"])
+            end_datetime += delta
+
+        return {
+            "check_in": get_fixed_timestamp(start_datetime),
+            "check_out": get_fixed_timestamp(end_datetime),
+        }
 
     def update_last(
         self, last_att_id: int, last_action: str, attendance_time: datetime.datetime

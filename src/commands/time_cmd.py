@@ -1,9 +1,9 @@
 import datetime
+from argparse import ArgumentParser, Namespace, _SubParsersAction
 
 from lib import time_functions
-from lib.colors import *
+from lib.colors import bold, faint, red
 from lib.odoo_client import OdooClient
-from argparse import _SubParsersAction, ArgumentParser, Namespace
 
 
 class TimeCommand:
@@ -17,6 +17,8 @@ class TimeCommand:
 
     def execute(self, _: Namespace):
         week_attendances = self.odoo_client.get_week_attendances()
+        holiday_attendance = self.odoo_client.get_holidays_as_attendance()
+        week_attendances.append(holiday_attendance)
 
         if not week_attendances:
             return print(red("Pas de pointages pour la semaine."))

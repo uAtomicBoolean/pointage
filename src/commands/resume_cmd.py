@@ -1,9 +1,9 @@
-from lib import time_functions
-from lib.colors import *
-from lib.odoo_client import OdooClient
-
 import datetime
-from argparse import _SubParsersAction, ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, _SubParsersAction
+
+from lib import time_functions
+from lib.colors import red
+from lib.odoo_client import OdooClient
 
 
 class ResumeCommand:
@@ -23,7 +23,11 @@ class ResumeCommand:
         french_days = ["Lun", "Mar", "Mer", "Jeu", "Ven"]
         worked_days = []
         for k in range(5):
-            curr_day_data = {"name": french_days[k], "worked_time": "", "s_worked_time": 0}
+            curr_day_data = {
+                "name": french_days[k],
+                "worked_time": "",
+                "s_worked_time": 0,
+            }
             current_day = first_day + datetime.timedelta(days=k)
             day_work_time = time_functions.get_work_time(
                 [a for a in raw_attendances if a["check_in"].day == current_day.day]

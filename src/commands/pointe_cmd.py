@@ -1,8 +1,12 @@
-import datetime
-from argparse import _SubParsersAction, ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, _SubParsersAction
+
 from lib.colors import green
 from lib.odoo_client import OdooClient
-from lib.time_functions import *
+from lib.time_functions import (
+    convert_offset_to_odoo_datetime,
+    get_fixed_timestamp,
+    parse_odoo_datetime,
+)
 
 
 class PointeCommand:
